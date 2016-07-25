@@ -1,5 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System;
+
+/** TODO
+ * resources management
+ * structure management
+ * passable/impassable
+ * movement speed (if passable)
+ **/
 
 namespace Models {
 
@@ -39,8 +47,32 @@ namespace Models {
 			}
 			set {
 				terrain = value;
+				if (SurfaceCallbackMethods != null) {
+					SurfaceCallbackMethods (this);
+				}
 			}
 		}
+
+		public int X {
+			get {
+				return x;
+			}
+			protected set {
+				x = value;
+			}
+		}
+
+		public int Y {
+			get {
+				return y;
+			}
+			protected set {
+				y = value;
+			}
+		}
+
+		//Delegated callbacks
+		Action<Surface> SurfaceCallbackMethods;
 
 		//Methods
 		public Surface (Level level, int x, int y) {
@@ -49,6 +81,12 @@ namespace Models {
 			this.y = y;
 		}
 
-	}
+		public void RegisterSurfaceCallback(Action<Surface> callback) {
+			SurfaceCallbackMethods += callback;
+		}
 
+		public void UnregisterSurfaceCallback(Action<Surface> callback) {
+			SurfaceCallbackMethods -= callback;
+		}
+	}
 }

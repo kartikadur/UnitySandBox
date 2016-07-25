@@ -1,6 +1,15 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/** TODO
+ * structure type
+ * resource input
+ * resource output
+ * production time
+ * (bool) workers required?
+ * size in blocks?
+ **/
+
 namespace Models {
 
 	public class Structure {

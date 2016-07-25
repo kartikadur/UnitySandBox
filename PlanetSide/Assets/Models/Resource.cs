@@ -1,6 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/** TODO
+ * create resource types (is there need for separation between natural and produced resources?)
+ * resource production levels? (or will this go with surface?)
+ * separation between surface resource and building resources?
+ **/
 namespace Models {
 
 	public class Resource {
