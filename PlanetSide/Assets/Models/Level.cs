@@ -51,11 +51,13 @@ namespace Models {
 		public void RandomizeSurfaces() {
 			for (int x = 0; x < width; x++) {
 				for (int y = 0; y < height; y++) {
-					if (Random.Range (0, 2) == 0) {
+					int randTerrain = Random.Range (0, 3);
+					if (randTerrain == 0) {
 						surfaces [x, y].Terrain = Surface.TerrainType.Plain;
-					} 
-					else {
+					} else if (randTerrain == 1) {
 						surfaces [x, y].Terrain = Surface.TerrainType.Forest;
+					} else {
+						surfaces [x, y].Terrain = Surface.TerrainType.Lake;
 					}
 				}
 			}

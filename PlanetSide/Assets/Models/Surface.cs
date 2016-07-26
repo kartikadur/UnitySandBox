@@ -24,7 +24,8 @@ namespace Models {
 		/// </summary>
 		public enum TerrainType {
 			Forest,
-			Plain
+			Plain,
+			Lake
 		}
 
 		// Default terrain type
