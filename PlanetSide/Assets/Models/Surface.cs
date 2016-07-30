@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿
+using UnityEngine;
 using System.Collections;
 using System;
 
@@ -25,7 +26,8 @@ namespace Models {
 		public enum TerrainType {
 			Forest,
 			Plain,
-			Lake
+			Lake,
+			Mountain
 		}
 
 		// Default terrain type
@@ -54,6 +56,12 @@ namespace Models {
 			}
 		}
 
+		public Level Level {
+			get {
+				return level;
+			}
+		}
+
 		public int X {
 			get {
 				return x;
@@ -69,6 +77,26 @@ namespace Models {
 			}
 			protected set {
 				y = value;
+			}
+		}
+
+		//Accessor method for getting and setting Resources on a surface
+		public Resource ResourceItem {
+			get {
+				return resourceItem;
+			}
+			protected set {
+				resourceItem = value;
+			}
+		}
+
+		//Accessor method for getting and setting Structures on a surface
+		public Structure StructureItem {
+			get {
+				return structureItem;
+			}
+			protected set {
+				structureItem = value;
 			}
 		}
 

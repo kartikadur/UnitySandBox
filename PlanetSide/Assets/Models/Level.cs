@@ -23,8 +23,9 @@ namespace Models {
 			}
 		}
 
+		//Create empty surface tiles for the level.
 		//Default width and height to set up to 100 thus allowing for 10000 surface tiles
-		public Level (int width = 100, int height = 100) {
+		public Level (int width = 20, int height = 20) {
 			this.width = width;
 			this.height = height;
 
@@ -51,13 +52,13 @@ namespace Models {
 		public void RandomizeSurfaces() {
 			for (int x = 0; x < width; x++) {
 				for (int y = 0; y < height; y++) {
-					int randTerrain = Random.Range (0, 3);
+					int randTerrain = Random.Range (0, 2);
 					if (randTerrain == 0) {
 						surfaces [x, y].Terrain = Surface.TerrainType.Plain;
 					} else if (randTerrain == 1) {
 						surfaces [x, y].Terrain = Surface.TerrainType.Forest;
 					} else {
-						surfaces [x, y].Terrain = Surface.TerrainType.Lake;
+						surfaces [x, y].Terrain = Surface.TerrainType.Mountain;
 					}
 				}
 			}
