@@ -28,12 +28,13 @@ namespace Models {
 		Action<Models.Structures> callBackMethods;
 
 		Models.Levels level;
-		int x, y;
+		int x, y, z;
 
 		public Structures(Models.Levels level, int x, int y, StructureType type) {
 			this.level = level;
 			this.x = x;
 			this.y = y;
+			this.z = z;
 			this.type = type;
 		}
 

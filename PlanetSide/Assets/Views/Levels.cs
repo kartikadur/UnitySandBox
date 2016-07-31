@@ -8,36 +8,42 @@ namespace Views {
 		Models.Levels level;
 
 		public Sprite Forest;
-		public Sprite Lake;
-		public Sprite Mountain;
-		public Sprite Plain;
+		public Sprite[] Lake;
+		public Sprite[] Plain;
+		public Sprite[] Mountain;
 
 		Views.Surfaces[] surfaceViews;
 
-		//Half width of sprite in unity units
-		float xOffset = 0.5f;
+		//offset holds half the width and height of tiles used in 2d space
+		Vector3 offset = new Vector3(0.5f, 0.25f, 0f);
+		//float xOffset = 0.5f;
 		//half height of sprite in unity units
-		float yOffset = 0.25f;
+		//float yOffset = 0.25f;
 
 		// Use this for initialization
 		void Start () {
 
 			//
-			int width = 5;
-			int height = 5;
-			level = new Models.Levels(width, height);
+			int width = 20;
+			int height = 20;
+			level = Models.Levels.Instance;
+			level.createLevel(width, height);
 			surfaceViews = new Views.Surfaces[width * height];
 
 			for (int x = 0; x < level.Width; x++) {
-				for (int y = level.Height - 1; y >= 0; y--) {
+				for (int y = 0; y < level.Height; y++) {
 					Models.Surfaces surfaceModel = level.GetSurfaceAt (x, y);
 					GameObject gameObject = new GameObject ();
 					gameObject.name = "Surface_" + x + "_" + y;
-					gameObject.transform.position = Utility.ConvertCartesianToIsometric (new Vector3 (x, y, 0), xOffset, yOffset);
+					//gameObject.transform.position = Utility.ConvertCartesianToIsometric (new Vector3 (x, y, 0), xOffset, yOffset);
 					gameObject.transform.SetParent (this.transform, true);
 
-					surfaceViews [x * level.Width + y] = new Views.Surfaces (this, surfaceModel.X, surfaceModel.Y, gameObject);
+					surfaceViews [x * level.Width + y] = new Views.Surfaces (this, gameObject);
 					surfaceViews [x * level.Width + y].GameObject.AddComponent<SpriteRenderer> ();
+
+
+					Vector3 point = Utility.ConvertCartesianToIsometric (new Vector3 (x, y, 0), offset);
+					surfaceViews [x * level.Width + y].SetPosition (point.x, point.y, point.z);
 					//Adds or registers the sprite the first time it is created
 					OnSurfaceTerrainChanged (surfaceModel, gameObject);
 
@@ -64,11 +70,11 @@ namespace Views {
 			if (surfaceModel.Terrain == Models.Surfaces.TerrainType.Forest) {
 				gameObject.GetComponent<SpriteRenderer> ().sprite = Forest;
 			} else if (surfaceModel.Terrain == Models.Surfaces.TerrainType.Lake) {
-				gameObject.GetComponent<SpriteRenderer> ().sprite = Lake;
+				gameObject.GetComponent<SpriteRenderer> ().sprite = Lake[UnityEngine.Random.Range(0, Lake.Length - 1)];
 			} else if (surfaceModel.Terrain == Models.Surfaces.TerrainType.Mountain) {
-				gameObject.GetComponent<SpriteRenderer> ().sprite = Mountain;
+				gameObject.GetComponent<SpriteRenderer> ().sprite = Mountain[UnityEngine.Random.Range(0, Mountain.Length - 1)];
 			} else if (surfaceModel.Terrain == Models.Surfaces.TerrainType.Plain) {
-				gameObject.GetComponent<SpriteRenderer> ().sprite = Plain;
+				gameObject.GetComponent<SpriteRenderer> ().sprite = Plain[UnityEngine.Random.Range(0, Plain.Length - 1)];
 			} else {
 				Debug.LogError ("Views.Levels - Trying to assign sprite based on terrain type, but terrain type not found");
 			}
@@ -81,6 +87,14 @@ namespace Views {
 			//TODO: find conversion metrics
 
 			return new Vector3 (point.x, point.y, point.z);
+		}
+
+		//Test function 
+		public void ChangeRandomeSurfaceTerrain() {
+			int randomX = UnityEngine.Random.Range (0, level.Width - 1);
+			int randomY = UnityEngine.Random.Range (0, level.Height - 1);
+			Models.Surfaces surface = level.GetSurfaceAt (randomX, randomY);
+			surface.Terrain = level.randomizeTerrain ();
 		}
 
 	}//End class

@@ -8,9 +8,9 @@ namespace Views {
 
 		Views.Levels level;
 		//isometric screen positions?
-		int x, y, z;
+		float x, y, z;
 
-		public int X {
+		public float X {
 			get {
 				return x;
 			}
@@ -19,7 +19,7 @@ namespace Views {
 			}
 		}
 
-		public int Y {
+		public float Y {
 			get {
 				return y;
 			}
@@ -28,7 +28,7 @@ namespace Views {
 			}
 		}
 
-		public int Z {
+		public float Z {
 			get {
 				return z;
 			}

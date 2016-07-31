@@ -16,6 +16,16 @@ namespace Models {
 	//This class should essentially behave as a singleton to prevent mutiple copies of the same level or different levels.
 	public class Levels {
 
+		private static readonly Levels _instance = new Levels();
+		static Levels() {}
+		private Levels() {}
+
+		public static Levels Instance {
+			get {
+				return _instance;
+			}
+		}
+
 		int width, height;
 
 		//All these are single dimensional as the respective classes store their level coordinates
@@ -38,7 +48,7 @@ namespace Models {
 			}
 		}
 
-		public Levels(int width = 10, int height = 10) {
+		public void createLevel(int width = 10, int height = 10, string seed = "") {
 			this.width = width;
 			this.height = height;
 
@@ -53,10 +63,13 @@ namespace Models {
 		}
 
 		public Models.Surfaces GetSurfaceAt(int x, int y) {
-			return surfaceModels [x * width + y];
+			if (x < width && x > -1 && y < height && y > -1) {
+				return surfaceModels [x * width + y];
+			}
+			return null;
 		}
 
-		private Models.Surfaces.TerrainType randomizeTerrain() {
+		public Models.Surfaces.TerrainType randomizeTerrain() {
 			return (Models.Surfaces.TerrainType)UnityEngine.Random.Range (0, Enum.GetNames (typeof(Models.Surfaces.TerrainType)).Length);
 		}
 	}

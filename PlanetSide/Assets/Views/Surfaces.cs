@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 
 namespace Views {
@@ -7,7 +8,9 @@ namespace Views {
 
 		Views.Levels level;
 		//Surfaces's screen positions.
-		int x, y, z;
+		float x, y, z;
+
+		Action<Views.Surfaces> callBackMethods;
 
 		GameObject gameObject;
 
@@ -17,13 +20,14 @@ namespace Views {
 			}
 		}
 
-		public Surfaces(Views.Levels level, int x, int y, GameObject gameObject){
+		public Surfaces(Views.Levels level, GameObject gameObject){
 			this.level = level;
-			this.x = x;
-			this.y = y;
 			this.gameObject = gameObject;
 		}
 
+		public void SetPosition(float x, float y, float z) {
+			this.gameObject.transform.position = new Vector3 (x, y, z);
+		}
 	}
 
 }

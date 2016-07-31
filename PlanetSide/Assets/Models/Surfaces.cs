@@ -41,7 +41,7 @@ namespace Models {
 		Models.Levels level;
 		//	World/Level Coordinates for surface 
 		// not isometric or screen coordinates, those can be calculated in the view namespace
-		int x, y;
+		int x, y, z;
 
 		// By default the terrain can be draw, 
 		// only when structures are added that this value becomes false
@@ -61,6 +61,7 @@ namespace Models {
 			this.level = level;
 			this.x = x;
 			this.y = y;
+			this.z = z;
 
 			//TODO: assign basic values to terrain-type, structure, and resource
 		}
