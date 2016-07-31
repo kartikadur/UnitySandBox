@@ -48,7 +48,7 @@ namespace Views {
 					OnSurfaceTerrainChanged (surfaceModel, gameObject);
 
 					//Registers a callback so that a surface can handle subsequent terrain changes
-					surfaceModel.RegisterCallBack ((surface) => {
+					surfaceModel.RegisterTerrainChangeCallBack ((surface) => {
 						//Debug.Log("Call back register");
 						OnSurfaceTerrainChanged (surface, gameObject);
 					});
@@ -70,11 +70,11 @@ namespace Views {
 			if (surfaceModel.Terrain == Models.Surfaces.TerrainType.Forest) {
 				gameObject.GetComponent<SpriteRenderer> ().sprite = Forest;
 			} else if (surfaceModel.Terrain == Models.Surfaces.TerrainType.Lake) {
-				gameObject.GetComponent<SpriteRenderer> ().sprite = Lake[UnityEngine.Random.Range(0, Lake.Length - 1)];
+				gameObject.GetComponent<SpriteRenderer> ().sprite = Lake[UnityEngine.Random.Range(0, Lake.Length)];
 			} else if (surfaceModel.Terrain == Models.Surfaces.TerrainType.Mountain) {
-				gameObject.GetComponent<SpriteRenderer> ().sprite = Mountain[UnityEngine.Random.Range(0, Mountain.Length - 1)];
+				gameObject.GetComponent<SpriteRenderer> ().sprite = Mountain[UnityEngine.Random.Range(0, Mountain.Length)];
 			} else if (surfaceModel.Terrain == Models.Surfaces.TerrainType.Plain) {
-				gameObject.GetComponent<SpriteRenderer> ().sprite = Plain[UnityEngine.Random.Range(0, Plain.Length - 1)];
+				gameObject.GetComponent<SpriteRenderer> ().sprite = Plain[UnityEngine.Random.Range(0, Plain.Length)];
 			} else {
 				Debug.LogError ("Views.Levels - Trying to assign sprite based on terrain type, but terrain type not found");
 			}
@@ -90,7 +90,7 @@ namespace Views {
 		}
 
 		//Test function 
-		public void ChangeRandomeSurfaceTerrain() {
+		public void ChangeRandomSurfaceTerrain() {
 			int randomX = UnityEngine.Random.Range (0, level.Width - 1);
 			int randomY = UnityEngine.Random.Range (0, level.Height - 1);
 			Models.Surfaces surface = level.GetSurfaceAt (randomX, randomY);

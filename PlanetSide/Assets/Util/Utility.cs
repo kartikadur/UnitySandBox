@@ -34,4 +34,11 @@ public static class Utility {
 
 		return new Vector3 (xPos, yPos, zPos);
 	}
+
+	public static void Swap<T> (ref T varA, ref T VarB) {
+		T temp;
+		temp = varA;
+		varA = VarB;
+		VarB = temp;
+	}
 }

@@ -28,14 +28,14 @@ namespace Models {
 			}
 			set {
 				terrain = value;
-				if (callBackMethods != null) {
+				if (terrainCallBackMethods != null) {
 					//Debug.Log ("Callback called from Models.surface");
-					callBackMethods (this);
+					terrainCallBackMethods (this);
 				}
 			}
 		}
 
-		public Action<Models.Surfaces> callBackMethods;
+		public Action<Models.Surfaces> terrainCallBackMethods;
 
 		//Surface's Parent element
 		Models.Levels level;
@@ -75,14 +75,14 @@ namespace Models {
 		 * remResource: removes (simuates depletion of) resource from surface
 		 */
 
-		public void RegisterCallBack(Action<Models.Surfaces> callback) {
+		public void RegisterTerrainChangeCallBack(Action<Models.Surfaces> callback) {
 			//Debug.Log("Call back registered");
-			callBackMethods += callback;
+			terrainCallBackMethods += callback;
 		}
 
-		public void UnregisterCallBack(Action<Models.Surfaces> callback) {
+		public void UnregisterTerrainChangeCallBack(Action<Models.Surfaces> callback) {
 			//Debug.Log("Call back unregistered");
-			callBackMethods -= callback;
+			terrainCallBackMethods -= callback;
 		}
 
 	}
