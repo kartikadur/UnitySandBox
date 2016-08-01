@@ -43,6 +43,33 @@ namespace Models {
 		// not isometric or screen coordinates, those can be calculated in the view namespace
 		int x, y, z;
 
+		public int X {
+			get {
+				return x;
+			}
+			protected set {
+				x = value;
+			}
+		}
+
+		public int Y {
+			get {
+				return y;
+			}
+			protected set {
+				y = value;
+			}
+		}
+
+		public int Z {
+			get {
+				return z;
+			}
+			protected set {
+				z = value;
+			}
+		}
+
 		// By default the terrain can be draw, 
 		// only when structures are added that this value becomes false
 		// removing the need to even submit it to the buffer
@@ -57,7 +84,7 @@ namespace Models {
 			}
 		}
 
-		public Surfaces (Models.Levels level, int x, int y) {
+		public Surfaces (Models.Levels level, int x, int y, int z = 0) {
 			this.level = level;
 			this.x = x;
 			this.y = y;
@@ -85,5 +112,27 @@ namespace Models {
 			terrainCallBackMethods -= callback;
 		}
 
+		public bool PlaceStructureOnSurface(Models.Structures structureModel) {
+			if (structureModel == null) {
+				//Removing object from surface
+				this.structure = null;
+				return true;
+			}
+
+			if (hasStructureOnSurface()) {
+				Debug.Log ("Models.Surfaces --> structure at " + X + ", " + Y + " already exists");
+				return false;
+			}
+
+			this.structure = structureModel;
+			//FIXME: placeholder cause the compiler throws a tantrum
+			return true;
+		}
+
+		//Check if the surface already has an object installed on the surface
+		// which means check if structre is not null
+		public bool hasStructureOnSurface() {
+			return (this.structure != null);
+		}
 	}
 }

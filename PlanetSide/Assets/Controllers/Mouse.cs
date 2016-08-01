@@ -16,8 +16,7 @@ public class Mouse : MonoBehaviour {
 	Vector3 endPoint;
 
 	bool isBuildModeActive = false;
-	Models.Structures.StructureType buildStructure = Models.Structures.StructureType.Empty;
-
+	Models.Structures.StructureType structureToBuild;
 
 	// Use this for initialization
 	void Start () {
@@ -36,6 +35,10 @@ public class Mouse : MonoBehaviour {
 
 		currentMousePosition = Camera.main.ScreenToWorldPoint (Input.mousePosition);
 
+		//TODO: right-click to cancel build mode
+		if (Input.GetMouseButtonUp (1)) {
+			isBuildModeActive = false;
+		}
 
 		//If the user clicks on screen (but not on the UI) then do the following
 		// check if in building mode (??)
@@ -72,7 +75,12 @@ public class Mouse : MonoBehaviour {
 				for (int y = (int)startPoint.y; y <= (int)endPoint.y; y++) {
 					Models.Surfaces surfaceModel = Models.Levels.Instance.GetSurfaceAt (x, y);
 					if (surfaceModel != null) {
-						surfaceModel.Terrain = Models.Surfaces.TerrainType.Mountain;
+						Debug.Log ("Building on surface : " + surfaceModel.X + ", " + surfaceModel.Y);
+						if (isBuildModeActive == true) {
+							BuildStructure (structureToBuild, surfaceModel);
+						} else {	
+							surfaceModel.Terrain = Models.Surfaces.TerrainType.Mountain;
+						}
 					}
 					
 				}
@@ -88,8 +96,13 @@ public class Mouse : MonoBehaviour {
 
 	//Build Structures
 	public void BuildHouse() {
-		
+		//BuildStructure (Models.Structures.StructureType.House);
+		isBuildModeActive = true;
+		structureToBuild = Models.Structures.StructureType.House;
 	}
 
-
+	protected void BuildStructure(Models.Structures.StructureType type, Models.Surfaces surfaceModel) {
+		Debug.Log ("Controllers.Mouse -> BuildStructure : building " + type);
+		levelModel.placeStructure (type, surfaceModel);
+	}
 }

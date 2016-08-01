@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 
 
 namespace Models {
@@ -33,7 +34,9 @@ namespace Models {
 		Models.Surfaces[] surfaceModels;
 
 		//These can be created on as needed basis
-		Models.Structures[] structureModels;
+		Dictionary<Models.Structures.StructureType, Models.Structures> structurePrototypes;
+		Action<Models.Structures> structurePlacedCallBacks;
+
 		Models.Resources[] resourceModels;
 
 		public int Width {
@@ -60,6 +63,47 @@ namespace Models {
 					surfaceModels [x * Width + y].Terrain = randomizeTerrain ();
 				}
 			}
+
+			//FIXME:
+			// for now this function initializes the level and creates a prototype 
+			// of all the structures in this level for tracking purposes
+
+			structurePrototypes = new Dictionary<Structures.StructureType, Structures> ();
+
+			//Build prototype for all strucutre types
+			foreach (Models.Structures.StructureType type in Enum.GetValues(typeof(Models.Structures.StructureType))) {
+				structurePrototypes.Add(type,
+					Models.Structures.createStructure (type, 
+						0f, //movement cost
+						1, // surfaces occupied in x dir
+						1  // surfaces occupied in y dir
+					));
+			}
+			Debug.Log("Models.Levels -> createLevel : created Structure prototypes ");
+
+			
+		}
+
+		//TODO: Currently empty function, but could be used to make surface tiles
+		// in the future when this functionality is required in the editor in the future
+		public void createSurface() {
+		}
+
+		public void placeStructure(Models.Structures.StructureType type, Models.Surfaces surfaceModel) {
+			Debug.Log ("Models.Levels -> placeStructure : trying to place structure on surface");
+			if (structurePrototypes.ContainsKey (type) == false) {
+				Debug.Log ("Models.Levels -> placeStructure : Cannot create structure of type " + type);
+				return;
+			}
+
+			Models.Structures structureModel = Models.Structures.placeStructureOnSurface (structurePrototypes [type], surfaceModel);
+
+			//either there are no callbacks or 
+			//structureModel returns null as there is already a structure on the surface
+			if (structurePlacedCallBacks != null && structureModel != null) {
+				Debug.Log ("Models.Levels -> placeStructure : callback for showing on screen");
+				structurePlacedCallBacks (structureModel);
+			}
 		}
 
 		public Models.Surfaces GetSurfaceAt(int x, int y) {
@@ -69,8 +113,20 @@ namespace Models {
 			return null;
 		}
 
+		//TODO: temporary for now might be removed later
 		public Models.Surfaces.TerrainType randomizeTerrain() {
 			return (Models.Surfaces.TerrainType)UnityEngine.Random.Range (0, Enum.GetNames (typeof(Models.Surfaces.TerrainType)).Length);
 		}
+
+		public void RegisterStructurePlacedCallBack(Action<Models.Structures> callback) {
+			structurePlacedCallBacks += callback;
+		}
+
+		public void UnregisterStructurePlacedCallBack(Action<Models.Structures> callback) {
+			structurePlacedCallBacks -= callback;
+		}
+
+
+
 	}
 }

@@ -18,7 +18,7 @@ namespace Models {
 		int x, y, z;
 		ResourceType type;
 
-		public Resources(Models.Levels level, int x, int y, ResourceType type) {
+		public Resources(Models.Levels level, ResourceType type, int x, int y, int z = 0) {
 			this.level = level;
 			this.x = x;
 			this.y = y;

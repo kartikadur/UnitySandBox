@@ -11,7 +11,7 @@ using System.Collections;
 namespace Models {
 	public class Structures : Items {
 
-		public enum StructureType { Empty, House }
+		public enum StructureType { House }
 
 		//FIXME: create accessor methods to protect this variable
 		StructureType type;
@@ -33,6 +33,15 @@ namespace Models {
 
 		Models.Surfaces surfaceModel;
 
+		public Models.Surfaces SurfaceModel {
+			get {
+				return surfaceModel;
+			}
+			protected set {
+				surfaceModel = value;
+			}
+		}
+
 		//this will indicate if structure occupied just 1 or more than 1 surface on screen.
 		int width = 1;
 		int height = 1;
@@ -40,21 +49,49 @@ namespace Models {
 		//1f => normal speed, 2f => half speed, nf => 1/n speed, 0f => impassable
 		float movemenCost = 1f;
 
-		public Structures(Models.Surfaces surface, StructureType type, 
-			float movementCost = 1f, int width = 1, int height = 1) {
-
-			this.surfaceModel = surface;
-			this.type = type;
-			this.movemenCost = movemenCost;
-			this.width = width;
-			this.height = height;
+		protected Structures() {
 		}
 
-		public void RegisterBuildStructureCallBack(Action<Models.Structures> callback) {
+		static public Models.Structures createStructure(StructureType type, 
+			float movementCost = 1f, int width = 1, int height = 1) {
+
+			Models.Structures structure = new Models.Structures ();
+
+			structure.type = type;
+			structure.movemenCost = movementCost;
+			structure.width = width;
+			structure.height = height;
+
+			return structure;
+		}
+
+		static public Models.Structures placeStructureOnSurface(Models.Structures structureModel,  Models.Surfaces surfaceModel) {
+			Models.Structures structure = new Models.Structures();
+
+			structure.type = structureModel.type;
+			structure.movemenCost = structureModel.movemenCost;
+			structure.width = structureModel.width;
+			structure.height = structureModel.height;
+
+			structure.SurfaceModel = surfaceModel;
+
+			if (surfaceModel.hasStructureOnSurface ()) {
+				Debug.Log ("Models.Structure -> placeStructureOnSurface : surface has pre-existing structure on it");
+				return null;
+			} else {
+				Debug.Log ("Models.Structure -> placeStructureOnSurface : structure added to surface");
+				surfaceModel.PlaceStructureOnSurface (structure);
+			}
+
+			return structure;
+
+		}
+
+		public void RegisterStructureChangesCallBack(Action<Models.Structures> callback) {
 			callBackMethods += callback;
 		}
 
-		public void UnregisterBuildStructureCallBack(Action<Models.Structures> callback) {
+		public void UnregisterStructureChangesCallBack(Action<Models.Structures> callback) {
 			callBackMethods -= callback;
 		}
 	}

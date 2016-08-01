@@ -1,12 +1,12 @@
 ﻿using UnityEngine;
-using System;
 using System.Collections;
 
 namespace Views {
+	public class Structures : Items {
 
-	public class Surfaces : Items {
-
-		Views.Levels level;
+		//TODO: For now this may not be needed, in the future this may be needed IDK
+		//Views.Surfaces surfaceView;
+		Views.Levels levelView;
 
 		GameObject gameObject;
 
@@ -16,8 +16,9 @@ namespace Views {
 			}
 		}
 
-		public Surfaces(Views.Levels level, GameObject gameObject){
-			this.level = level;
+		public Structures(Views.Levels level, GameObject gameObject) {
+
+			this.levelView = level;
 			this.gameObject = gameObject;
 		}
 

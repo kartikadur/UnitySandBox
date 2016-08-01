@@ -5,7 +5,7 @@ using System.Collections;
 namespace Models {
 	public abstract class Items {
 
-		Models.Levels level;
+		Models.Levels level = null;
 
 		public Models.Levels Level {
 			get {
