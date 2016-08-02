@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using System;
 using System.Collections;
 
 
@@ -52,14 +53,14 @@ public class Mouse : MonoBehaviour {
 		// register endX and endY
 		if (Input.GetMouseButtonUp (0)) {
 			endPoint = Utility.ConvertIsometricToCartesian (currentMousePosition);
-			/*Debug.Log ("Mouse Input Coordinates: (" + ISOpoint.x + ", " + ISOpoint.y + ")");
-			Debug.Log ("Surface Coordinates: (" + CRTpoint.x + ", " + CRTpoint.y + ")");
-			Debug.Log ("-----------");
+			/*Console.WriteLine ("Mouse Input Coordinates: (" + ISOpoint.x + ", " + ISOpoint.y + ")");
+			Console.WriteLine ("Surface Coordinates: (" + CRTpoint.x + ", " + CRTpoint.y + ")");
+			Console.WriteLine ("-----------");
 
 			if (levelModel.GetSurfaceAt ((int)CRTpoint.x, (int)CRTpoint.y) != null) {
 				levelModel.GetSurfaceAt ((int)CRTpoint.x, (int)CRTpoint.y).Terrain = levelModel.randomizeTerrain ();
 			} else {
-				Debug.Log ("Mouse Controller - Outside Map Bounds");
+				Console.WriteLine ("Mouse Controller - Outside Map Bounds");
 			}
 			*/
 
@@ -75,11 +76,12 @@ public class Mouse : MonoBehaviour {
 				for (int y = (int)startPoint.y; y <= (int)endPoint.y; y++) {
 					Models.Surfaces surfaceModel = Models.Levels.Instance.GetSurfaceAt (x, y);
 					if (surfaceModel != null) {
-						Debug.Log ("Building on surface : " + surfaceModel.X + ", " + surfaceModel.Y);
+						Console.WriteLine("Building on surface : " + surfaceModel.X + ", " + surfaceModel.Y);
 						if (isBuildModeActive == true) {
 							BuildStructure (structureToBuild, surfaceModel);
 						} else {	
-							surfaceModel.Terrain = Models.Surfaces.TerrainType.Mountain;
+							surfaceModel.Terrain = levelModel.randomizeTerrain ();
+								//Models.Surfaces.TerrainType.Mountain;
 						}
 					}
 					
@@ -102,7 +104,7 @@ public class Mouse : MonoBehaviour {
 	}
 
 	protected void BuildStructure(Models.Structures.StructureType type, Models.Surfaces surfaceModel) {
-		Debug.Log ("Controllers.Mouse -> BuildStructure : building " + type);
+		Console.WriteLine ("Controllers.Mouse -> BuildStructure : building " + type);
 		levelModel.placeStructure (type, surfaceModel);
 	}
 }

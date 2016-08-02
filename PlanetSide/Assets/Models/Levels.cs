@@ -79,7 +79,7 @@ namespace Models {
 						1  // surfaces occupied in y dir
 					));
 			}
-			Debug.Log("Models.Levels -> createLevel : created Structure prototypes ");
+			Console.WriteLine("Models.Levels -> createLevel : created Structure prototypes ");
 
 			
 		}
@@ -90,9 +90,9 @@ namespace Models {
 		}
 
 		public void placeStructure(Models.Structures.StructureType type, Models.Surfaces surfaceModel) {
-			Debug.Log ("Models.Levels -> placeStructure : trying to place structure on surface");
+			Console.WriteLine ("Models.Levels -> placeStructure : trying to place structure on surface");
 			if (structurePrototypes.ContainsKey (type) == false) {
-				Debug.Log ("Models.Levels -> placeStructure : Cannot create structure of type " + type);
+				Console.WriteLine ("Models.Levels -> placeStructure : Cannot create structure of type " + type);
 				return;
 			}
 
@@ -101,7 +101,7 @@ namespace Models {
 			//either there are no callbacks or 
 			//structureModel returns null as there is already a structure on the surface
 			if (structurePlacedCallBacks != null && structureModel != null) {
-				Debug.Log ("Models.Levels -> placeStructure : callback for showing on screen");
+				Console.WriteLine ("Models.Levels -> placeStructure : callback for showing on screen");
 				structurePlacedCallBacks (structureModel);
 			}
 		}

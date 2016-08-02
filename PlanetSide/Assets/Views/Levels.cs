@@ -53,22 +53,22 @@ namespace Views {
 
 					//Create Surface View
 					surfaceViews [x * level.Width + y] = new Views.Surfaces (this, gameObject);
+					//Add sprite Renderer Component
+					surfaceViews [x * level.Width + y].GameObject.AddComponent<SpriteRenderer> ();
+					surfaceViews [x * level.Width + y].GameObject.GetComponent<SpriteRenderer> ().sortingOrder = Utility.SortingOrderNumber (level.Width, level.Height, x, y);
+					//Place surface on map using its gameobject
+					Vector3 point = Utility.ConvertCartesianToIsometric (new Vector3 (x, y, 0), offset);
+					surfaceViews [x * level.Width + y].SetPosition (point.x, point.y);
 
 					//Add view and model to dictionary
 					surfaceModelViewMap.Add (surfaceModel, surfaceViews [x * level.Width + y]);
 
-					//Add sprite Renderer Component
-					surfaceViews [x * level.Width + y].GameObject.AddComponent<SpriteRenderer> ();
-
-					//Place surface on map using its gameobject
-					Vector3 point = Utility.ConvertCartesianToIsometric (new Vector3 (x, y, 0), offset);
-					surfaceViews [x * level.Width + y].SetPosition (point.x, point.y);
 					//apply the surface terrain for the first time
 					OnSurfaceTerrainChanged (surfaceModel, gameObject);
 
 					//Registers a callback so that a surface can handle subsequent terrain changes
 					surfaceModel.RegisterTerrainChangeCallBack ((surface) => {
-						//Debug.Log("Call back register");
+						//Console.WriteLine("Call back register");
 						OnSurfaceTerrainChanged (surface, gameObject);
 					});
 				}
@@ -79,12 +79,14 @@ namespace Views {
 		
 		// Update is called once per frame
 		void Update () {
-			//Debug.Log (randomizeTerrain ());
-		
+			//Console.WriteLine (randomizeTerrain ());
+			//FIXME: Everytime a new object is placed on screen check it's x,y coordinates and then place in correct draw order.
+
+
 		}
 
 		public void OnSurfaceTerrainChanged(Models.Surfaces surfaceModel, GameObject gameObject) {
-			//Debug.Log("On surface changed");
+			//Console.WriteLine("On surface changed");
 
 			if (surfaceModel.Terrain == Models.Surfaces.TerrainType.Forest) {
 				gameObject.GetComponent<SpriteRenderer> ().sprite = Forest;
@@ -95,42 +97,62 @@ namespace Views {
 			} else if (surfaceModel.Terrain == Models.Surfaces.TerrainType.Plain) {
 				gameObject.GetComponent<SpriteRenderer> ().sprite = Plain[UnityEngine.Random.Range(0, Plain.Length)];
 			} else {
-				Debug.LogError ("Views.Levels - Trying to assign sprite based on terrain type, but terrain type not found");
+				Console.WriteLine ("Views.Levels - Trying to assign sprite based on terrain type, but terrain type not found");
 			}
 
 		}
 
+		//Every time a new structure is added call this function to redraw or adjust the sorting layers
+		//FIXME: uses naive solution to redraw everything on screen. future iterations will have to look for terrain clashes as well
+		// Also a better solution will only look for items before itself in the sorting order or drawing order.
+		protected void OnNewStructureAddedRedraw() {
+			foreach (Models.Structures structureModel in structureModelViewMap.Keys) {
+				//Debug.Log (structureModelViewMap [structureModel]);
+				structureModelViewMap[structureModel].GameObject.GetComponent<SpriteRenderer>().sortingOrder = Utility.SortingOrderNumber(level.Width, level.Height, structureModel.SurfaceModel.X, structureModel.SurfaceModel.Y);
+			}
+		}
+
+		//TODO: once a new structure is created, check its drawing order compared to all other structures allready placed.
+		// then rearrange all the structures and place at correct position.
 		public void OnStructurePlacedOnSurface(Models.Structures structureModel) {
-			Debug.Log("Views.Levels -> OnStructurePlacedOnSurface : placing structure view");
+			Console.WriteLine("Views.Levels -> OnStructurePlacedOnSurface : placing structure view");
 
 			//Create Game Object
 			GameObject gameObject = new GameObject();
 			gameObject.name = "Structure_" + structureModel.SurfaceModel.X + "_" + structureModel.SurfaceModel.Y;
+
+			//Set Parent?
+			//Views.Surfaces surfaceView = surfaceModelViewMap[structureModel.SurfaceModel];
 			gameObject.transform.SetParent (this.transform, true);
 
 			Views.Structures structureView = new Views.Structures (this, gameObject);
+
+			//FIXME: hardcoded for the moment change in the future.
+			structureView.GameObject.AddComponent<SpriteRenderer> ().sprite = House;
 
 			//Position the structure on to its surface
 			Vector3 point = Utility.ConvertCartesianToIsometric (new Vector3 (structureModel.SurfaceModel.X, structureModel.SurfaceModel.Y, 0), offset);
 			structureView.SetPosition (point.x, point.y, point.z);
 
+			//When this is added check for its position, and then basically redraw all the tiles where overlap may occur.
 			structureModelViewMap.Add (structureModel, structureView);
+			//Redraw all the structures
+			this.OnNewStructureAddedRedraw ();
 
-			//FIXME: hardcoded for the moment change in the future.
-			structureView.GameObject.AddComponent<SpriteRenderer> ().sprite = House;
+
 
 			structureModel.RegisterStructureChangesCallBack ( (structure) => {
 				OnStructureChanges(structure); 
 			});
-			Debug.Log("Views.Levels -> OnStructurePlacedOnSurface : structure view placed");
+			Console.WriteLine ("Views.Levels -> OnStructurePlacedOnSurface : structure view placed");
 		}
 
 		public void OnStructureChanges(Models.Structures structureModel) {
 			//TODO: implement this when a placed structure needs to expand, gets damaged, or destroyed
-			Debug.Log("Views.Levels -> OnStructureChanges : Currently unimplementd");
+			Console.WriteLine("Views.Levels -> OnStructureChanges : Currently unimplementd");
 		}
 
-		/* Utility functions */
+		/* Utility functions 
 		//FIXME: create body for these functions
 		protected Vector3 ConvertIsometrictToCartesian(Vector3 point, float xOffset, float yOffset){
 			//TODO: find conversion metrics
@@ -139,7 +161,7 @@ namespace Views {
 		}
 
 		//Test function : Not needed anymore
-		/*public void ChangeRandomSurfaceTerrain() {
+		public void ChangeRandomSurfaceTerrain() {
 			int randomX = UnityEngine.Random.Range (0, level.Width - 1);
 			int randomY = UnityEngine.Random.Range (0, level.Height - 1);
 			Models.Surfaces surface = level.GetSurfaceAt (randomX, randomY);

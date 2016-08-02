@@ -41,4 +41,9 @@ public static class Utility {
 		varA = VarB;
 		VarB = temp;
 	}
+
+	public static int SortingOrderNumber(int width, int height, int x, int y) {
+		//(level.Width * level.Height) - (structureModel.SurfaceModel.X * level.Width + structureModel.SurfaceModel.Y)
+		return (width * height) - (x * width + y);
+	}
 }

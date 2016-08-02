@@ -76,10 +76,10 @@ namespace Models {
 			structure.SurfaceModel = surfaceModel;
 
 			if (surfaceModel.hasStructureOnSurface ()) {
-				Debug.Log ("Models.Structure -> placeStructureOnSurface : surface has pre-existing structure on it");
+				Console.WriteLine ("Models.Structure -> placeStructureOnSurface : surface has pre-existing structure on it");
 				return null;
 			} else {
-				Debug.Log ("Models.Structure -> placeStructureOnSurface : structure added to surface");
+				Console.WriteLine ("Models.Structure -> placeStructureOnSurface : structure added to surface");
 				surfaceModel.PlaceStructureOnSurface (structure);
 			}
 
