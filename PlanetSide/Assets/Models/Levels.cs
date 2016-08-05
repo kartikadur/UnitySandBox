@@ -28,6 +28,7 @@ namespace Models {
 		}
 
 		int width, height;
+		int CurrentDirection;
 
 		//All these are single dimensional as the respective classes store their level coordinates
 		//Also individual elements can be accessed using x*width + y
@@ -76,10 +77,12 @@ namespace Models {
 					Models.Structures.createStructure (type, 
 						0f, //movement cost
 						1, // surfaces occupied in x dir
-						1  // surfaces occupied in y dir
+						1,  // surfaces occupied in y dir
+						true //Links to neighbors
 					));
+				Debug.Log ("Models.Levels -> createLevel : created Structure prototypes ");
 			}
-			Console.WriteLine("Models.Levels -> createLevel : created Structure prototypes ");
+//			Debug.Log ("Models.Levels -> createLevel : created Structure prototypes ");
 
 			
 		}
@@ -90,9 +93,9 @@ namespace Models {
 		}
 
 		public void placeStructure(Models.Structures.StructureType type, Models.Surfaces surfaceModel) {
-			Console.WriteLine ("Models.Levels -> placeStructure : trying to place structure on surface");
+			Console.Write ("Models.Levels -> placeStructure : trying to place structure on surface");
 			if (structurePrototypes.ContainsKey (type) == false) {
-				Console.WriteLine ("Models.Levels -> placeStructure : Cannot create structure of type " + type);
+				Debug.Log ("Models.Levels -> placeStructure : Cannot create structure of type " + type);
 				return;
 			}
 
@@ -101,7 +104,7 @@ namespace Models {
 			//either there are no callbacks or 
 			//structureModel returns null as there is already a structure on the surface
 			if (structurePlacedCallBacks != null && structureModel != null) {
-				Console.WriteLine ("Models.Levels -> placeStructure : callback for showing on screen");
+				Debug.Log ("Models.Levels -> placeStructure : callback for showing on screen");
 				structurePlacedCallBacks (structureModel);
 			}
 		}
@@ -111,6 +114,48 @@ namespace Models {
 				return surfaceModels [x * width + y];
 			}
 			return null;
+		}
+
+
+		/* FIXME: currently cardinal directions are assumed as follows
+		 * North is x - 1
+		 * East is y - 1
+		 * South is x + 1
+		 * West is y + 1
+		 * other directions are a combination of the above
+		 * handling edge cases x = 0, x = level.width - 1, y = 0, and y = level.height - 1?
+		 * sends an int where a 1 in the following positions indicates a neightbor of the same type
+		 */
+		public string CheckForNeighbors(int x, int y, Models.Structures.StructureType type) {
+
+
+			//Return this when done
+			//Keeps track of directions in which the current tile has neighbors;
+			string direction = "";
+
+			//North
+			if (x < this.width - 1 && this.GetSurfaceAt (x + 1, y).Structure != null && this.GetSurfaceAt (x + 1, y).Structure.Type == type) {
+				direction += "N";
+			}
+			//East
+			if (y > 0 && this.GetSurfaceAt (x, y - 1).Structure != null && this.GetSurfaceAt (x, y - 1).Structure.Type == type) {
+				direction += "E";
+			}
+			//South
+			if (x > 0 && this.GetSurfaceAt (x - 1, y).Structure != null && this.GetSurfaceAt (x - 1, y).Structure.Type == type) {
+				direction += "S";
+			}
+			//West
+			if (y < this.height - 1 && this.GetSurfaceAt (x, y + 1).Structure != null && this.GetSurfaceAt (x, y + 1).Structure.Type == type) {
+				direction += "W";
+			}
+
+			//Temp Check for final direction of Structure
+			Debug.Log("this structure has same structures in directions " + direction);
+
+//			this.GetSurfaceAt (x, y).Structure = flag;
+			//FIXME: Place holder, currently return the structure's direction as is.
+			return direction;
 		}
 
 		//TODO: temporary for now might be removed later

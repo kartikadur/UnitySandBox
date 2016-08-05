@@ -22,6 +22,12 @@ namespace Models {
 		Models.Structures structure;
 		TerrainType terrain = TerrainType.Plain;
 
+		public Models.Structures Structure {
+			get {
+				return structure;
+			}
+		}
+
 		public TerrainType Terrain {
 			get {
 				return terrain;
@@ -29,7 +35,7 @@ namespace Models {
 			set {
 				terrain = value;
 				if (terrainCallBackMethods != null) {
-					//Console.WriteLine ("Callback called from Models.surface");
+					//Console.Write ("Callback called from Models.surface");
 					terrainCallBackMethods (this);
 				}
 			}
@@ -103,12 +109,12 @@ namespace Models {
 		 */
 
 		public void RegisterTerrainChangeCallBack(Action<Models.Surfaces> callback) {
-			//Console.WriteLine("Call back registered");
+			//Console.Write("Call back registered");
 			terrainCallBackMethods += callback;
 		}
 
 		public void UnregisterTerrainChangeCallBack(Action<Models.Surfaces> callback) {
-			//Console.WriteLine("Call back unregistered");
+			//Console.Write("Call back unregistered");
 			terrainCallBackMethods -= callback;
 		}
 
@@ -120,7 +126,7 @@ namespace Models {
 			}
 
 			if (hasStructureOnSurface()) {
-				Console.WriteLine ("Models.Surfaces --> structure at " + X + ", " + Y + " already exists");
+				Console.Write ("Models.Surfaces --> structure at " + X + ", " + Y + " already exists");
 				return false;
 			}
 

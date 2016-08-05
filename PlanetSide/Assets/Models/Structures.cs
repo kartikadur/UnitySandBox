@@ -11,16 +11,46 @@ using System.Collections;
 namespace Models {
 	public class Structures : Items {
 
-		public enum StructureType { House }
+		public enum StructureType { Wall, Road };
+
+//		//This coding allows for 9 blocks to form a unit
+//		//to simplify maybe a plus type of structure can be enfoced
+//		public enum StructureNeighbors {
+//			_,
+//			_N,
+//			_E,
+//			_S,
+//			_W,
+//			_NE,
+//			_ES,
+//			_SW,
+//			_NW,
+//			_NEW,
+//			_NES,
+//			_ESW,
+//			_NSW,
+//			_NESW
+//		};
 
 		//FIXME: create accessor methods to protect this variable
 		StructureType type;
+//		StructureNeighbors neighbors;
 
 		public StructureType Type {
 			get {
 				return type;
 			}
 		}
+
+//		public StructureNeighbors Neighbors {
+//			get {
+//				return neighbors;
+//			}
+//			set {
+//				neighbors = value;
+//			}
+//		}
+
 
 		/*
 		 * TODO:
@@ -46,6 +76,18 @@ namespace Models {
 		int width = 1;
 		int height = 1;
 
+		//if individual structures connect with neighbors to create larger structure
+		bool linksToNeighbor = false;
+
+		public bool LinksToNeighbor {
+			get {
+				return linksToNeighbor;
+			}
+			protected set {
+				linksToNeighbor = value;
+			}
+		}
+
 		//1f => normal speed, 2f => half speed, nf => 1/n speed, 0f => impassable
 		float movemenCost = 1f;
 
@@ -53,7 +95,7 @@ namespace Models {
 		}
 
 		static public Models.Structures createStructure(StructureType type, 
-			float movementCost = 1f, int width = 1, int height = 1) {
+			float movementCost = 1f, int width = 1, int height = 1, bool linksToNeighbor = false) {
 
 			Models.Structures structure = new Models.Structures ();
 
@@ -61,26 +103,54 @@ namespace Models {
 			structure.movemenCost = movementCost;
 			structure.width = width;
 			structure.height = height;
+			structure.linksToNeighbor = linksToNeighbor;
 
 			return structure;
 		}
 
-		static public Models.Structures placeStructureOnSurface(Models.Structures structureModel,  Models.Surfaces surfaceModel) {
+		public static Models.Structures placeStructureOnSurface(Models.Structures structureModel,  Models.Surfaces surfaceModel) {
 			Models.Structures structure = new Models.Structures();
 
 			structure.type = structureModel.type;
 			structure.movemenCost = structureModel.movemenCost;
 			structure.width = structureModel.width;
 			structure.height = structureModel.height;
+			structure.linksToNeighbor = structureModel.linksToNeighbor;
 
 			structure.SurfaceModel = surfaceModel;
 
 			if (surfaceModel.hasStructureOnSurface ()) {
-				Console.WriteLine ("Models.Structure -> placeStructureOnSurface : surface has pre-existing structure on it");
+				Console.Write ("Models.Structure -> placeStructureOnSurface : surface has pre-existing structure on it");
 				return null;
 			} else {
-				Console.WriteLine ("Models.Structure -> placeStructureOnSurface : structure added to surface");
+				Debug.Log ("Models.Structure -> placeStructureOnSurface : structure added to surface");
 				surfaceModel.PlaceStructureOnSurface (structure);
+			}
+
+
+			int x = structure.SurfaceModel.X;
+			int y = structure.SurfaceModel.Y;
+			Models.Levels levelModel = Models.Levels.Instance;
+
+			if (structure.linksToNeighbor == true) {
+				string direction = "";
+
+				//North
+				if (x < levelModel.Width - 1 && levelModel.GetSurfaceAt (x + 1, y).Structure != null && levelModel.GetSurfaceAt (x + 1, y).Structure.Type == structure.type) {
+					levelModel.GetSurfaceAt (x + 1, y).Structure.callBackMethods (levelModel.GetSurfaceAt (x + 1, y).Structure);
+				}
+				//East
+				if (y > 0 && levelModel.GetSurfaceAt (x, y - 1).Structure != null && levelModel.GetSurfaceAt (x, y - 1).Structure.Type == structure.type) {
+					levelModel.GetSurfaceAt (x, y - 1).Structure.callBackMethods (levelModel.GetSurfaceAt (x, y - 1).Structure);
+				}
+				//South
+				if (x > 0 && levelModel.GetSurfaceAt (x - 1, y).Structure != null && levelModel.GetSurfaceAt (x - 1, y).Structure.Type == structure.type) {
+					levelModel.GetSurfaceAt (x - 1, y).Structure.callBackMethods (levelModel.GetSurfaceAt (x - 1, y).Structure);
+				}
+				//West
+				if (y < levelModel.Height - 1 && levelModel.GetSurfaceAt (x, y + 1).Structure != null && levelModel.GetSurfaceAt (x, y + 1).Structure.Type == structure.type) {
+					levelModel.GetSurfaceAt (x, y + 1).Structure.callBackMethods (levelModel.GetSurfaceAt (x, y + 1).Structure);
+				}
 			}
 
 			return structure;

@@ -53,14 +53,14 @@ public class Mouse : MonoBehaviour {
 		// register endX and endY
 		if (Input.GetMouseButtonUp (0)) {
 			endPoint = Utility.ConvertIsometricToCartesian (currentMousePosition);
-			/*Console.WriteLine ("Mouse Input Coordinates: (" + ISOpoint.x + ", " + ISOpoint.y + ")");
-			Console.WriteLine ("Surface Coordinates: (" + CRTpoint.x + ", " + CRTpoint.y + ")");
-			Console.WriteLine ("-----------");
+			/*Console.Write ("Mouse Input Coordinates: (" + ISOpoint.x + ", " + ISOpoint.y + ")");
+			Console.Write ("Surface Coordinates: (" + CRTpoint.x + ", " + CRTpoint.y + ")");
+			Console.Write ("-----------");
 
 			if (levelModel.GetSurfaceAt ((int)CRTpoint.x, (int)CRTpoint.y) != null) {
 				levelModel.GetSurfaceAt ((int)CRTpoint.x, (int)CRTpoint.y).Terrain = levelModel.randomizeTerrain ();
 			} else {
-				Console.WriteLine ("Mouse Controller - Outside Map Bounds");
+				Console.Write ("Mouse Controller - Outside Map Bounds");
 			}
 			*/
 
@@ -76,9 +76,13 @@ public class Mouse : MonoBehaviour {
 				for (int y = (int)startPoint.y; y <= (int)endPoint.y; y++) {
 					Models.Surfaces surfaceModel = Models.Levels.Instance.GetSurfaceAt (x, y);
 					if (surfaceModel != null) {
-						Console.WriteLine("Building on surface : " + surfaceModel.X + ", " + surfaceModel.Y);
+						Console.Write("Building on surface : " + surfaceModel.X + ", " + surfaceModel.Y);
 						if (isBuildModeActive == true) {
-							BuildStructure (structureToBuild, surfaceModel);
+							if (surfaceModel.Terrain == Models.Surfaces.TerrainType.Mountain) {
+								Debug.Log ("Mouse Controller -> Update : cannot build on mountains");
+							} else {
+								BuildStructure (structureToBuild, surfaceModel);
+							}
 						} else {	
 							surfaceModel.Terrain = levelModel.randomizeTerrain ();
 								//Models.Surfaces.TerrainType.Mountain;
@@ -96,15 +100,20 @@ public class Mouse : MonoBehaviour {
 	}
 
 
-	//Build Structures
-	public void BuildHouse() {
-		//BuildStructure (Models.Structures.StructureType.House);
+	//Function call to set wall building mode
+	public void BuildWall() {
 		isBuildModeActive = true;
-		structureToBuild = Models.Structures.StructureType.House;
+		structureToBuild = Models.Structures.StructureType.Wall;
+	}
+
+	//Function call to set road building mode
+	public void BuildRoad() {
+		isBuildModeActive = true;
+		structureToBuild = Models.Structures.StructureType.Road;
 	}
 
 	protected void BuildStructure(Models.Structures.StructureType type, Models.Surfaces surfaceModel) {
-		Console.WriteLine ("Controllers.Mouse -> BuildStructure : building " + type);
+		Debug.Log ("Controllers.Mouse -> BuildStructure : building " + type);
 		levelModel.placeStructure (type, surfaceModel);
 	}
 }
