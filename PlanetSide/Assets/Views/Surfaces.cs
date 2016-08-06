@@ -4,7 +4,7 @@ using System.Collections;
 
 namespace Views {
 
-	public class Surfaces : Items {
+	public class Surfaces {
 
 		Views.Levels level;
 
@@ -16,8 +16,8 @@ namespace Views {
 			}
 		}
 
-		public Surfaces(Views.Levels level, GameObject gameObject){
-			this.level = level;
+		public Surfaces(GameObject gameObject){
+//			this.level = level;
 			this.gameObject = gameObject;
 		}
 

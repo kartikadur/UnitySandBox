@@ -6,18 +6,24 @@ using System.Collections.Generic;
 namespace Views {
 	public class Levels : MonoBehaviour {
 
+		private static readonly Levels _instance = null;
+		static Levels() {}
+		private Levels() {}
+
+		public static Levels viewLevelInstance {
+			get;
+			protected set;
+		}
+
+
 		Models.Levels level = Models.Levels.Instance;
 
-		public Sprite Forest;
+		public Sprite Empty;
 		public Sprite[] Lake;
 		public Sprite[] Plain;
 		public Sprite[] Mountain;
 
-		public Sprite[] House;
-		public Sprite[] Wall;
-		public Sprite[] Road;
-
-		public Sprite[] roads;
+		public Sprite[] sprites;
 
 
 		Views.Surfaces surfaceViews;
@@ -40,13 +46,18 @@ namespace Views {
 			structureNameSpriteMap = new Dictionary<string, Sprite> ();
 
 			//Debug.Log ("Runs First");
-			roads = Resources.LoadAll<Sprite>("Sprites");
+			sprites = Resources.LoadAll<Sprite>("Sprites");
 
 
-			foreach (var r in roads) {
+			foreach (var s in sprites) {
 				//Debug.Log ("Views.Levels --> Start : loaded sprite for - " + r);
-				structureNameSpriteMap [r.name] = r;
+				structureNameSpriteMap [s.name] = s;
 			}
+
+			if (viewLevelInstance != null) {
+				Debug.Log ("Views.Level --> on enable : cant have two instances of levelView");
+			}
+			viewLevelInstance = this;
 		}
 
 
@@ -57,6 +68,7 @@ namespace Views {
 			int width = 20;
 			int height = 20;
 			level.RegisterStructurePlacedCallBack (OnStructurePlacedOnSurface);
+//			level.RegisterSurfaceChangedCallBack (OnSurfaceTerrainCreated);
 			level.createLevel(width, height);
 			//surfaceViews = new Views.Surfaces[width * height];
 
@@ -68,36 +80,12 @@ namespace Views {
 				for (int y = 0; y < level.Height; y++) {
 					//Get Surface Model
 					Models.Surfaces surfaceModel = level.GetSurfaceAt (x, y);
-
-					//Create Game object for this surface view
-					GameObject gameObject = new GameObject ();
-					gameObject.name = "Surface_" + x + "_" + y;
-					//gameObject.transform.position = Utility.ConvertCartesianToIsometric (new Vector3 (x, y, 0), xOffset, yOffset);
-					gameObject.transform.SetParent (this.transform, true);
-
-					//Create Surface View
-					surfaceViews  = new Views.Surfaces (this, gameObject);
-
-					//Add sprite Renderer Component and then add its sorting order
-					surfaceViews.GameObject.AddComponent<SpriteRenderer> ();
-					surfaceViews.GameObject.GetComponent<SpriteRenderer> ().sortingOrder = Utility.SortingOrderNumber (level.Width, level.Height, x, y);
-					//Place surface on map using its gameobject
-					Vector3 point = Utility.ConvertCartesianToIsometric (new Vector3 (x, y, 0), offset);
-					surfaceViews .SetPosition (point.x, point.y);
-
-					//Add view and model to dictionary
-					surfaceModelViewMap.Add (surfaceModel, surfaceViews);
-
-					//apply the surface terrain for the first time
-					OnSurfaceTerrainChanged (surfaceModel, gameObject);
-
-					//Registers a callback so that a surface can handle subsequent terrain changes
-					surfaceModel.RegisterTerrainChangeCallBack ((surface) => {
-						//Console.Write("Call back register");
-						OnSurfaceTerrainChanged (surface, gameObject);
-					});
+					this.OnSurfaceTerrainCreated (surfaceModel);
 				}
 			}
+
+			//Tell the level model about any changes to individual surfaces instead of registering with each surface
+			level.RegisterSurfaceChangedCallBack (OnSurfaceTerrainChanged);
 
 
 		}
@@ -110,32 +98,58 @@ namespace Views {
 
 		}
 
-		public void OnSurfaceTerrainChanged(Models.Surfaces surfaceModel, GameObject gameObject) {
-			//Console.Write("On surface changed");
+		public void OnSurfaceTerrainCreated(Models.Surfaces surfaceModel) {
+			
+			int x = surfaceModel.X;
+			int y = surfaceModel.Y;
+			GameObject gameObject = new GameObject ();
+			Vector3 point = Utility.ConvertCartesianToIsometric (new Vector3 (x, y, 0), offset);
 
-			if (surfaceModel.Terrain == Models.Surfaces.TerrainType.Forest) {
-				gameObject.GetComponent<SpriteRenderer> ().sprite = Forest;
+			surfaceModel.Terrain = Models.Surfaces.TerrainType.Empty;
+
+//			Debug.Log ("Views.Level --> OnSurfaceTerrainCreated : Creating surface view for surface models");
+			//Create an object of Views.Surface class
+			Views.Surfaces surfaceView = new Views.Surfaces(gameObject);
+			surfaceView.GameObject.name = "Surface_" + x + "_" + y;
+			surfaceView.GameObject.transform.SetParent (viewLevelInstance.transform, true);
+
+			surfaceView.GameObject.AddComponent<SpriteRenderer> ();
+			surfaceView.GameObject.GetComponent<SpriteRenderer> ().sprite = Empty;
+			surfaceView.GameObject.GetComponent<SpriteRenderer> ().sortingOrder = Utility.SortingOrderNumber (level.Width, level.Height, x, y);
+			surfaceView.SetPosition (point.x, point.y);
+
+			//FIXME: for now all the sprite tiles will be empty
+
+			surfaceModelViewMap.Add (surfaceModel, surfaceView);
+
+//			surfaceModel.RegisterTerrainCallBack (OnSurfaceTerrainChanged);
+//			Debug.Log ("Views.Level --> OnSurfaceTerrainCreated : SurfaceModel Created and displayed on screen " + surfaceModelViewMap.Count);
+		}
+
+		public void OnSurfaceTerrainChanged(Models.Surfaces surfaceModel) {
+			Debug.Log ("On surface changed");
+
+			if (surfaceModelViewMap.ContainsKey (surfaceModel) == false) {
+				Debug.Log ("Views.Levels --> On surface Changed : surface model does not exist");
+				return;
+			}
+
+			Views.Surfaces surfaceView = surfaceModelViewMap [surfaceModel];
+
+			//FIXME: Major Re-Write Needed
+			if (surfaceModel.Terrain == Models.Surfaces.TerrainType.Empty) {
+				surfaceView.GameObject.GetComponent<SpriteRenderer> ().sprite = Empty;
 			} else if (surfaceModel.Terrain == Models.Surfaces.TerrainType.Lake) {
-				gameObject.GetComponent<SpriteRenderer> ().sprite = Lake[UnityEngine.Random.Range(0, Lake.Length)];
+				surfaceView.GameObject.GetComponent<SpriteRenderer> ().sprite = Lake[UnityEngine.Random.Range(0, Lake.Length)];
 			} else if (surfaceModel.Terrain == Models.Surfaces.TerrainType.Mountain) {
-				gameObject.GetComponent<SpriteRenderer> ().sprite = Mountain[UnityEngine.Random.Range(0, Mountain.Length)];
+				surfaceView.GameObject.GetComponent<SpriteRenderer> ().sprite = Mountain[UnityEngine.Random.Range(0, Mountain.Length)];
 			} else if (surfaceModel.Terrain == Models.Surfaces.TerrainType.Plain) {
-				gameObject.GetComponent<SpriteRenderer> ().sprite = Plain[UnityEngine.Random.Range(0, Plain.Length)];
+				surfaceView.GameObject.GetComponent<SpriteRenderer> ().sprite = Plain[UnityEngine.Random.Range(0, Plain.Length)];
 			} else {
-				Console.Write ("Views.Levels - Trying to assign sprite based on terrain type, but terrain type not found");
+				Debug.Log ("Views.Levels - Trying to assign sprite based on terrain type, but terrain type not found");
 			}
 
 		}
-
-		//Every time a new structure is added call this function to redraw or adjust the sorting layers
-		//FIXME: uses naive solution to redraw everything on screen. future iterations will have to look for terrain clashes as well
-		// Also a better solution will only look for items before itself in the sorting order or drawing order.
-		/*protected void OnNewStructureAddedRedraw() {
-			foreach (Models.Structures structureModel in structureModelViewMap.Keys) {
-				//Console.Write (structureModelViewMap [structureModel]);
-				structureModelViewMap[structureModel].GameObject.GetComponent<SpriteRenderer>().sortingOrder = Utility.SortingOrderNumber(level.Width, level.Height, structureModel.SurfaceModel.X, structureModel.SurfaceModel.Y);
-			}
-		}*/
 
 		//TODO: once a new structure is created, check its drawing order compared to all other structures allready placed.
 		// then rearrange all the structures and place at correct position.
@@ -150,10 +164,7 @@ namespace Views {
 			//Views.Surfaces surfaceView = surfaceModelViewMap[structureModel.SurfaceModel];
 			gameObject.transform.SetParent (this.transform, true);
 
-			Views.Structures structureView = new Views.Structures (this, gameObject);
-
-
-			//FIXME: hardcoded for the moment change in the future.
+			Views.Structures structureView = new Views.Structures (viewLevelInstance, gameObject);
 
 			/*
 			 * Structure view currently statically assigned road tile

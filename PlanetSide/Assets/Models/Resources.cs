@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 
 namespace Models {
-	public class Resources : Items {
+	public class Resources {
 
 		//TODO: Create list of resources and a summary block for the same
 		//e.g. values --> wheat, labor, water, etc.

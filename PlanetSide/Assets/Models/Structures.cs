@@ -9,28 +9,9 @@ using System.Collections;
 /// but that might not be the best idea in the long run. maybe another class may handle all the calculations
 /// </summary>
 namespace Models {
-	public class Structures : Items {
+	public class Structures {
 
-		public enum StructureType { Wall, Road };
-
-//		//This coding allows for 9 blocks to form a unit
-//		//to simplify maybe a plus type of structure can be enfoced
-//		public enum StructureNeighbors {
-//			_,
-//			_N,
-//			_E,
-//			_S,
-//			_W,
-//			_NE,
-//			_ES,
-//			_SW,
-//			_NW,
-//			_NEW,
-//			_NES,
-//			_ESW,
-//			_NSW,
-//			_NESW
-//		};
+		public enum StructureType { Wall, Road, House };
 
 		//FIXME: create accessor methods to protect this variable
 		StructureType type;
@@ -41,17 +22,7 @@ namespace Models {
 				return type;
 			}
 		}
-
-//		public StructureNeighbors Neighbors {
-//			get {
-//				return neighbors;
-//			}
-//			set {
-//				neighbors = value;
-//			}
-//		}
-
-
+			
 		/*
 		 * TODO:
 		 * if the structure creates a resource then handle that
@@ -59,7 +30,9 @@ namespace Models {
 		 * track resouces using var/params
 		 */
 
-		Action<Models.Structures> callBackMethods;
+		Action<Models.Structures> structureCallBacks;
+
+		Func<Models.Surfaces,bool> positionValidationFunctions;
 
 		Models.Surfaces surfaceModel;
 
@@ -73,8 +46,26 @@ namespace Models {
 		}
 
 		//this will indicate if structure occupied just 1 or more than 1 surface on screen.
-		int width = 1;
-		int height = 1;
+		int width;
+		int height;
+
+		public int Width {
+			get {
+				return width;
+			}
+			protected set {
+				width = value;
+			}
+		}
+
+		public int Height {
+			get {
+				return height;
+			}
+			protected set {
+				height = value;
+			}
+		}
 
 		//if individual structures connect with neighbors to create larger structure
 		bool linksToNeighbor = false;
@@ -105,10 +96,17 @@ namespace Models {
 			structure.height = height;
 			structure.linksToNeighbor = linksToNeighbor;
 
+			structure.positionValidationFunctions = structure.isPositionValid;
+
 			return structure;
 		}
 
 		public static Models.Structures placeStructureOnSurface(Models.Structures structureModel,  Models.Surfaces surfaceModel) {
+			if(structureModel.positionValidationFunctions(surfaceModel) == false) {
+				Debug.Log("Models.Structures --> place structure on surface : cannot place the structure here");
+				return null;
+			}
+
 			Models.Structures structure = new Models.Structures();
 
 			structure.type = structureModel.type;
@@ -133,23 +131,22 @@ namespace Models {
 			Models.Levels levelModel = Models.Levels.Instance;
 
 			if (structure.linksToNeighbor == true) {
-				string direction = "";
 
 				//North
 				if (x < levelModel.Width - 1 && levelModel.GetSurfaceAt (x + 1, y).Structure != null && levelModel.GetSurfaceAt (x + 1, y).Structure.Type == structure.type) {
-					levelModel.GetSurfaceAt (x + 1, y).Structure.callBackMethods (levelModel.GetSurfaceAt (x + 1, y).Structure);
+					levelModel.GetSurfaceAt (x + 1, y).Structure.structureCallBacks (levelModel.GetSurfaceAt (x + 1, y).Structure);
 				}
 				//East
 				if (y > 0 && levelModel.GetSurfaceAt (x, y - 1).Structure != null && levelModel.GetSurfaceAt (x, y - 1).Structure.Type == structure.type) {
-					levelModel.GetSurfaceAt (x, y - 1).Structure.callBackMethods (levelModel.GetSurfaceAt (x, y - 1).Structure);
+					levelModel.GetSurfaceAt (x, y - 1).Structure.structureCallBacks (levelModel.GetSurfaceAt (x, y - 1).Structure);
 				}
 				//South
 				if (x > 0 && levelModel.GetSurfaceAt (x - 1, y).Structure != null && levelModel.GetSurfaceAt (x - 1, y).Structure.Type == structure.type) {
-					levelModel.GetSurfaceAt (x - 1, y).Structure.callBackMethods (levelModel.GetSurfaceAt (x - 1, y).Structure);
+					levelModel.GetSurfaceAt (x - 1, y).Structure.structureCallBacks (levelModel.GetSurfaceAt (x - 1, y).Structure);
 				}
 				//West
 				if (y < levelModel.Height - 1 && levelModel.GetSurfaceAt (x, y + 1).Structure != null && levelModel.GetSurfaceAt (x, y + 1).Structure.Type == structure.type) {
-					levelModel.GetSurfaceAt (x, y + 1).Structure.callBackMethods (levelModel.GetSurfaceAt (x, y + 1).Structure);
+					levelModel.GetSurfaceAt (x, y + 1).Structure.structureCallBacks (levelModel.GetSurfaceAt (x, y + 1).Structure);
 				}
 			}
 
@@ -157,12 +154,35 @@ namespace Models {
 
 		}
 
+		//Checks if the current position of a structure is valid
+		//For structures larger than 1x1, it checks its neighbors as well
+		//Function returns true only if all surfaces under consideration don'e have structures on them
+		public bool isPositionValid(Models.Surfaces surfaceModel) {
+			
+			for (int x = surfaceModel.X; x < surfaceModel.X + this.Width; x++) {
+				for (int y = surfaceModel.Y; y < surfaceModel.Y + this.Height; y++) {
+					Models.Surfaces surface = surfaceModel.Level.GetSurfaceAt (x, y);
+					//Return false if the floor is empty
+					if (surface.Terrain == Surfaces.TerrainType.Empty) {
+						return false;
+					}
+
+					//return false if there is already a structure on the surface
+					if (surface.hasStructureOnSurface () == true) {
+						return false;
+					}
+				}
+			}
+
+			return true;
+		}
+
 		public void RegisterStructureChangesCallBack(Action<Models.Structures> callback) {
-			callBackMethods += callback;
+			structureCallBacks += callback;
 		}
 
 		public void UnregisterStructureChangesCallBack(Action<Models.Structures> callback) {
-			callBackMethods -= callback;
+			structureCallBacks -= callback;
 		}
 	}
 }

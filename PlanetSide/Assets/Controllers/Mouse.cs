@@ -9,8 +9,6 @@ public class Mouse : MonoBehaviour {
 
 
 	Models.Levels levelModel;
-	Vector3 ISOpoint;
-	Vector3 CRTpoint;
 	Vector3 currentMousePosition;
 	Vector3 lastMousePosition;
 	Vector3 startPoint;
@@ -18,6 +16,7 @@ public class Mouse : MonoBehaviour {
 
 	bool isBuildModeActive = false;
 	Models.Structures.StructureType structureToBuild;
+	Models.Surfaces.TerrainType terrainToApply;
 
 	// Use this for initialization
 	void Start () {
@@ -53,14 +52,14 @@ public class Mouse : MonoBehaviour {
 		// register endX and endY
 		if (Input.GetMouseButtonUp (0)) {
 			endPoint = Utility.ConvertIsometricToCartesian (currentMousePosition);
-			/*Console.Write ("Mouse Input Coordinates: (" + ISOpoint.x + ", " + ISOpoint.y + ")");
-			Console.Write ("Surface Coordinates: (" + CRTpoint.x + ", " + CRTpoint.y + ")");
-			Console.Write ("-----------");
+			/* ("Mouse Input Coordinates: (" + ISOpoint.x + ", " + ISOpoint.y + ")");
+			Debug.Log ("Surface Coordinates: (" + CRTpoint.x + ", " + CRTpoint.y + ")");
+			Debug.Log ("-----------");
 
 			if (levelModel.GetSurfaceAt ((int)CRTpoint.x, (int)CRTpoint.y) != null) {
 				levelModel.GetSurfaceAt ((int)CRTpoint.x, (int)CRTpoint.y).Terrain = levelModel.randomizeTerrain ();
 			} else {
-				Console.Write ("Mouse Controller - Outside Map Bounds");
+				Debug.Log ("Mouse Controller - Outside Map Bounds");
 			}
 			*/
 
@@ -76,16 +75,15 @@ public class Mouse : MonoBehaviour {
 				for (int y = (int)startPoint.y; y <= (int)endPoint.y; y++) {
 					Models.Surfaces surfaceModel = Models.Levels.Instance.GetSurfaceAt (x, y);
 					if (surfaceModel != null) {
-						Console.Write("Building on surface : " + surfaceModel.X + ", " + surfaceModel.Y);
+						Debug.Log ("Building on surface : " + surfaceModel.X + ", " + surfaceModel.Y);
 						if (isBuildModeActive == true) {
 							if (surfaceModel.Terrain == Models.Surfaces.TerrainType.Mountain) {
 								Debug.Log ("Mouse Controller -> Update : cannot build on mountains");
 							} else {
 								BuildStructure (structureToBuild, surfaceModel);
 							}
-						} else {	
-							surfaceModel.Terrain = levelModel.randomizeTerrain ();
-								//Models.Surfaces.TerrainType.Mountain;
+						} else {
+							SetTerrainType (terrainToApply, surfaceModel);
 						}
 					}
 					
@@ -99,8 +97,34 @@ public class Mouse : MonoBehaviour {
 
 	}
 
+	/// <summary>
+	/// Build calls for establishing terrain on surface
+	/// Set[TerrainType] will allow the user change the surface from any terrain to TerrainType
+	/// </summary>
+	public void SetPlain() {
+		isBuildModeActive = false;
+		terrainToApply = Models.Surfaces.TerrainType.Plain;
+	}
 
-	//Function call to set wall building mode
+	public void SetMountain() {
+		isBuildModeActive = false;
+		terrainToApply = Models.Surfaces.TerrainType.Mountain;
+	}
+
+	public void SetLake() {
+		isBuildModeActive = false;
+		terrainToApply = Models.Surfaces.TerrainType.Lake;
+	}
+
+	public void SetTerrainType(Models.Surfaces.TerrainType terrain, Models.Surfaces surfaceModel) {
+		Debug.Log ("Controllers.Mouse --> SetTerrainType : terrain " + terrain);
+		surfaceModel.Terrain = terrain;
+	}
+
+	/// <summary>
+	/// Build calls for establishing structures on surface
+	/// Build[StructureType] will allow the user to create a structure of BuildingType on the surface
+	/// </summary>
 	public void BuildWall() {
 		isBuildModeActive = true;
 		structureToBuild = Models.Structures.StructureType.Wall;
@@ -110,6 +134,12 @@ public class Mouse : MonoBehaviour {
 	public void BuildRoad() {
 		isBuildModeActive = true;
 		structureToBuild = Models.Structures.StructureType.Road;
+	}
+
+	//Function call to set house building mode
+	public void BuildHouse() {
+		isBuildModeActive = true;
+		structureToBuild = Models.Structures.StructureType.House;
 	}
 
 	protected void BuildStructure(Models.Structures.StructureType type, Models.Surfaces surfaceModel) {

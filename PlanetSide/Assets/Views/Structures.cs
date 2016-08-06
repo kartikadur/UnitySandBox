@@ -2,11 +2,11 @@
 using System.Collections;
 
 namespace Views {
-	public class Structures : Items {
+	public class Structures {
 
 		//TODO: For now this may not be needed, in the future this may be needed IDK
 		//Views.Surfaces surfaceView;
-		Views.Levels levelView;
+//		Views.Levels levelView;
 
 		GameObject gameObject;
 
@@ -18,7 +18,7 @@ namespace Views {
 
 		public Structures(Views.Levels level, GameObject gameObject) {
 
-			this.levelView = level;
+//			this.levelView = level;
 			this.gameObject = gameObject;
 		}
 

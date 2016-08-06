@@ -13,14 +13,14 @@ namespace Models {
 	/// Models.Resource : (if any) created on this surface
 	/// bool drawTerrain : if something covers this surface completely then there is no need to draw it.
 	/// </summary>
-	public class Surfaces : Items {
+	public class Surfaces {
 
-		public enum TerrainType { Forest, Lake, Mountain, Plain };
+		public enum TerrainType { Empty, Lake, Mountain, Plain };
 
 		//FIXME:create protected accessor methods
 		Models.Resources resource;
 		Models.Structures structure;
-		TerrainType terrain = TerrainType.Plain;
+		TerrainType terrain;
 
 		public Models.Structures Structure {
 			get {
@@ -33,6 +33,10 @@ namespace Models {
 				return terrain;
 			}
 			set {
+				//if the terrain changes to the same type then return without doing anything
+				if (terrain == value) {
+					return;
+				}
 				terrain = value;
 				if (terrainCallBackMethods != null) {
 					//Console.Write ("Callback called from Models.surface");
@@ -48,6 +52,15 @@ namespace Models {
 		//	World/Level Coordinates for surface 
 		// not isometric or screen coordinates, those can be calculated in the view namespace
 		int x, y, z;
+
+		public Models.Levels Level {
+			get {
+				return level;
+			}
+			protected set {
+				level = value;
+			}
+		}
 
 		public int X {
 			get {
@@ -108,31 +121,37 @@ namespace Models {
 		 * remResource: removes (simuates depletion of) resource from surface
 		 */
 
-		public void RegisterTerrainChangeCallBack(Action<Models.Surfaces> callback) {
+		public void RegisterTerrainCallBack(Action<Models.Surfaces> callback) {
 			//Console.Write("Call back registered");
 			terrainCallBackMethods += callback;
 		}
 
-		public void UnregisterTerrainChangeCallBack(Action<Models.Surfaces> callback) {
+		public void UnregisterChangeCallBack(Action<Models.Surfaces> callback) {
 			//Console.Write("Call back unregistered");
 			terrainCallBackMethods -= callback;
 		}
 
 		public bool PlaceStructureOnSurface(Models.Structures structureModel) {
+
 			if (structureModel == null) {
 				//Removing object from surface
 				this.structure = null;
 				return true;
 			}
 
-			if (hasStructureOnSurface()) {
-				Console.Write ("Models.Surfaces --> structure at " + X + ", " + Y + " already exists");
+			if (structureModel.isPositionValid (structureModel.SurfaceModel) == false) {
+				Debug.Log ("Models.Surfaces --> PlaceStructureOnSurface : structure at " + X + ", " + Y + " already exists");
 				return false;
-			}
+			} else {
+				for (int a = X; a < X + structureModel.Width; a++) {
+					for (int b = Y; b < Y + structureModel.Height; b++) {
+						level.GetSurfaceAt (a, b).structure = structureModel;
+					}
+				}
 
-			this.structure = structureModel;
-			//FIXME: placeholder cause the compiler throws a tantrum
-			return true;
+				//FIXME: placeholder cause the compiler throws a tantrum
+				return true;	
+			}
 		}
 
 		//Check if the surface already has an object installed on the surface

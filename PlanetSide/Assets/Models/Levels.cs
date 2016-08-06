@@ -33,6 +33,7 @@ namespace Models {
 		//All these are single dimensional as the respective classes store their level coordinates
 		//Also individual elements can be accessed using x*width + y
 		Models.Surfaces[] surfaceModels;
+		Action<Models.Surfaces> surfaceChangedCallBacks;
 
 		//These can be created on as needed basis
 		Dictionary<Models.Structures.StructureType, Models.Structures> structurePrototypes;
@@ -61,7 +62,8 @@ namespace Models {
 			for (int x = 0; x < width; x++) {
 				for (int y = 0; y < height; y++) {
 					surfaceModels [x * Width + y] = new Models.Surfaces (this, x, y);
-					surfaceModels [x * Width + y].Terrain = randomizeTerrain ();
+					surfaceModels [x * Width + y].Terrain = Models.Surfaces.TerrainType.Empty;
+					surfaceModels [x * Width + y].RegisterTerrainCallBack (surfaceChanged);
 				}
 			}
 
@@ -71,29 +73,59 @@ namespace Models {
 
 			structurePrototypes = new Dictionary<Structures.StructureType, Structures> ();
 
+			structurePrototypes.Add(Models.Structures.StructureType.Road,
+				Models.Structures.createStructure (Models.Structures.StructureType.Road, 
+					1f, //movement cost
+					1, // surfaces occupied in x dir
+					1,  // surfaces occupied in y dir
+					true //Links to neighbors
+				));
+
+			structurePrototypes.Add(Models.Structures.StructureType.Wall,
+				Models.Structures.createStructure (Models.Structures.StructureType.Wall, 
+					0f, //movement cost
+					1, // surfaces occupied in x dir
+					1,  // surfaces occupied in y dir
+					true //Links to neighbors
+				));
+
+			structurePrototypes.Add(Models.Structures.StructureType.House,
+				Models.Structures.createStructure (Models.Structures.StructureType.House, 
+					0f, //movement cost
+					2, // surfaces occupied in x dir
+					2,  // surfaces occupied in y dir
+					false //Links to neighbors
+				));
+
+//			Debug.Log ("No. of items in structure prototypes: " + structurePrototypes.Count);
+//			Debug.Log ("Has Object of type House: " + structurePrototypes.ContainsKey (Models.Structures.StructureType.House));
+			Debug.Log ("Models.Levels -> createLevel : created Structure prototypes ");
 			//Build prototype for all strucutre types
-			foreach (Models.Structures.StructureType type in Enum.GetValues(typeof(Models.Structures.StructureType))) {
-				structurePrototypes.Add(type,
-					Models.Structures.createStructure (type, 
-						0f, //movement cost
-						1, // surfaces occupied in x dir
-						1,  // surfaces occupied in y dir
-						true //Links to neighbors
-					));
-				Debug.Log ("Models.Levels -> createLevel : created Structure prototypes ");
-			}
+//			foreach (Models.Structures.StructureType type in Enum.GetValues(typeof(Models.Structures.StructureType))) {
+//				structurePrototypes.Add(type,
+//					Models.Structures.createStructure (type, 
+//						0f, //movement cost
+//						1, // surfaces occupied in x dir
+//						1,  // surfaces occupied in y dir
+//						true //Links to neighbors
+//					));
+//			}
 //			Debug.Log ("Models.Levels -> createLevel : created Structure prototypes ");
 
 			
 		}
 
-		//TODO: Currently empty function, but could be used to make surface tiles
-		// in the future when this functionality is required in the editor in the future
-		public void createSurface() {
+		public void surfaceChanged(Models.Surfaces surfaceModel) {
+			Debug.Log ("Models.Levels --> structure changed : something related to the surface changed updating surface");
+			//Check if surface existis ?
+
+			if (surfaceChangedCallBacks != null && surfaceModel != null) {
+				surfaceChangedCallBacks (surfaceModel);
+			}
 		}
 
 		public void placeStructure(Models.Structures.StructureType type, Models.Surfaces surfaceModel) {
-			Console.Write ("Models.Levels -> placeStructure : trying to place structure on surface");
+			Debug.Log ("Models.Levels -> placeStructure : trying to place structure of type : " + type);
 			if (structurePrototypes.ContainsKey (type) == false) {
 				Debug.Log ("Models.Levels -> placeStructure : Cannot create structure of type " + type);
 				return;
@@ -163,6 +195,16 @@ namespace Models {
 			return (Models.Surfaces.TerrainType)UnityEngine.Random.Range (0, Enum.GetNames (typeof(Models.Surfaces.TerrainType)).Length);
 		}
 
+		//Surface Models Callback Registers
+		public void RegisterSurfaceChangedCallBack(Action<Models.Surfaces> callback) {
+			surfaceChangedCallBacks += callback;
+		}
+
+		public void UnregisterSurfaceChangedCallBack(Action<Models.Surfaces> callback) {
+			surfaceChangedCallBacks -= callback;
+		}
+
+		//Structure Models Callback Registers
 		public void RegisterStructurePlacedCallBack(Action<Models.Structures> callback) {
 			structurePlacedCallBacks += callback;
 		}
