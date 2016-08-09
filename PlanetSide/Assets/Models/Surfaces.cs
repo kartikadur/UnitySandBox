@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
+using System.Collections.Generic;
 
 
 namespace Models {
@@ -16,6 +17,7 @@ namespace Models {
 	public class Surfaces {
 
 		public enum TerrainType { Empty, Lake, Mountain, Plain };
+
 
 		//FIXME:create protected accessor methods
 		Models.Resources resource;
@@ -38,14 +40,14 @@ namespace Models {
 					return;
 				}
 				terrain = value;
-				if (terrainCallBackMethods != null) {
+				if (TerrainCallBackMethods != null) {
 					//Console.Write ("Callback called from Models.surface");
-					terrainCallBackMethods (this);
+					TerrainCallBackMethods (this);
 				}
 			}
 		}
 
-		public Action<Models.Surfaces> terrainCallBackMethods;
+		public Action<Models.Surfaces> TerrainCallBackMethods;
 
 		//Surface's Parent element
 		Models.Levels level;
@@ -112,26 +114,7 @@ namespace Models {
 			//TODO: assign basic values to terrain-type, structure, and resource
 		}
 
-
-		/* 
-		 * TODO:
-		 * addStructure : adds a structure/building to the surface (also sets canDrawTerrain to false)
-		 * remStructure : removes a structure/building from surface (aso sets canDrawTerrain to true)
-		 * addResource: Adds a resource to surface
-		 * remResource: removes (simuates depletion of) resource from surface
-		 */
-
-		public void RegisterTerrainCallBack(Action<Models.Surfaces> callback) {
-			//Console.Write("Call back registered");
-			terrainCallBackMethods += callback;
-		}
-
-		public void UnregisterChangeCallBack(Action<Models.Surfaces> callback) {
-			//Console.Write("Call back unregistered");
-			terrainCallBackMethods -= callback;
-		}
-
-		public bool PlaceStructureOnSurface(Models.Structures structureModel) {
+		public bool PlaceStructure(Models.Structures structureModel) {
 
 			if (structureModel == null) {
 				//Removing object from surface
@@ -139,7 +122,7 @@ namespace Models {
 				return true;
 			}
 
-			if (structureModel.isPositionValid (structureModel.SurfaceModel) == false) {
+			if (structureModel.isPositionValidOnSurface (structureModel.SurfaceModel) == false) {
 				Debug.Log ("Models.Surfaces --> PlaceStructureOnSurface : structure at " + X + ", " + Y + " already exists");
 				return false;
 			} else {
@@ -156,8 +139,24 @@ namespace Models {
 
 		//Check if the surface already has an object installed on the surface
 		// which means check if structre is not null
-		public bool hasStructureOnSurface() {
+		public bool hasStructure() {
 			return (this.structure != null);
+		}
+
+
+		/// <description>
+		/// Register and Unregister terrain call backs using these functions.
+		/// RegisterTerrainCallBack<T> (Action<T> callback)
+		/// UnregisterTerrainCallBack<T> (Action<T> callback)
+		/// </description>
+		public void RegisterTerrainCallBack(Action<Models.Surfaces> callback) {
+			//Console.Write("Call back registered");
+			TerrainCallBackMethods += callback;
+		}
+
+		public void UnregisterChangeCallBack(Action<Models.Surfaces> callback) {
+			//Console.Write("Call back unregistered");
+			TerrainCallBackMethods -= callback;
 		}
 	}
 }

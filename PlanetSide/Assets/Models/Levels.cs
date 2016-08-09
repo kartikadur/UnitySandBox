@@ -28,18 +28,22 @@ namespace Models {
 		}
 
 		int width, height;
+		//FIXME: Currently not implemented but may be used in map rotations later
 		int CurrentDirection;
 
 		//All these are single dimensional as the respective classes store their level coordinates
 		//Also individual elements can be accessed using x*width + y
 		Models.Surfaces[] surfaceModels;
-		Action<Models.Surfaces> surfaceChangedCallBacks;
+		Action<Models.Surfaces> SurfaceChangedCallBacks;
 
 		//These can be created on as needed basis
 		Dictionary<Models.Structures.StructureType, Models.Structures> structurePrototypes;
-		Action<Models.Structures> structurePlacedCallBacks;
+		Action<Models.Structures> StructurePlacedCallBacks;
 
-		Models.Resources[] resourceModels;
+		//These can be created on as needed basis
+		Dictionary<Models.Resources.ResourceType, Models.Resources> resourcePrototypes;
+		Action<Models.Resources> resourcePlaceCallBacks; //or should this be used for extraction?
+		//Something to track resouces extracted or collected for processing
 
 		public int Width {
 			get {
@@ -53,7 +57,7 @@ namespace Models {
 			}
 		}
 
-		public void createLevel(int width = 10, int height = 10, string seed = "") {
+		public void CreateEmptyLevel(int width = 10, int height = 10, string seed = "") {
 			this.width = width;
 			this.height = height;
 
@@ -63,7 +67,7 @@ namespace Models {
 				for (int y = 0; y < height; y++) {
 					surfaceModels [x * Width + y] = new Models.Surfaces (this, x, y);
 					surfaceModels [x * Width + y].Terrain = Models.Surfaces.TerrainType.Empty;
-					surfaceModels [x * Width + y].RegisterTerrainCallBack (surfaceChanged);
+					surfaceModels [x * Width + y].RegisterTerrainCallBack (SurfaceChanged);
 				}
 			}
 
@@ -74,7 +78,7 @@ namespace Models {
 			structurePrototypes = new Dictionary<Structures.StructureType, Structures> ();
 
 			structurePrototypes.Add(Models.Structures.StructureType.Road,
-				Models.Structures.createStructure (Models.Structures.StructureType.Road, 
+				Models.Structures.CreateStructure (Models.Structures.StructureType.Road, 
 					1f, //movement cost
 					1, // surfaces occupied in x dir
 					1,  // surfaces occupied in y dir
@@ -82,7 +86,7 @@ namespace Models {
 				));
 
 			structurePrototypes.Add(Models.Structures.StructureType.Wall,
-				Models.Structures.createStructure (Models.Structures.StructureType.Wall, 
+				Models.Structures.CreateStructure (Models.Structures.StructureType.Wall, 
 					0f, //movement cost
 					1, // surfaces occupied in x dir
 					1,  // surfaces occupied in y dir
@@ -90,56 +94,23 @@ namespace Models {
 				));
 
 			structurePrototypes.Add(Models.Structures.StructureType.House,
-				Models.Structures.createStructure (Models.Structures.StructureType.House, 
+				Models.Structures.CreateStructure (Models.Structures.StructureType.House, 
 					0f, //movement cost
 					2, // surfaces occupied in x dir
 					2,  // surfaces occupied in y dir
 					false //Links to neighbors
 				));
 
-//			Debug.Log ("No. of items in structure prototypes: " + structurePrototypes.Count);
-//			Debug.Log ("Has Object of type House: " + structurePrototypes.ContainsKey (Models.Structures.StructureType.House));
-			Debug.Log ("Models.Levels -> createLevel : created Structure prototypes ");
-			//Build prototype for all strucutre types
-//			foreach (Models.Structures.StructureType type in Enum.GetValues(typeof(Models.Structures.StructureType))) {
-//				structurePrototypes.Add(type,
-//					Models.Structures.createStructure (type, 
-//						0f, //movement cost
-//						1, // surfaces occupied in x dir
-//						1,  // surfaces occupied in y dir
-//						true //Links to neighbors
-//					));
-//			}
-//			Debug.Log ("Models.Levels -> createLevel : created Structure prototypes ");
-
-			
+			Debug.Log ("Models.Levels -> CreateEmptyLevel : created Structure prototypes ");
 		}
 
-		public void surfaceChanged(Models.Surfaces surfaceModel) {
-			Debug.Log ("Models.Levels --> structure changed : something related to the surface changed updating surface");
-			//Check if surface existis ?
 
-			if (surfaceChangedCallBacks != null && surfaceModel != null) {
-				surfaceChangedCallBacks (surfaceModel);
-			}
-		}
-
-		public void placeStructure(Models.Structures.StructureType type, Models.Surfaces surfaceModel) {
-			Debug.Log ("Models.Levels -> placeStructure : trying to place structure of type : " + type);
-			if (structurePrototypes.ContainsKey (type) == false) {
-				Debug.Log ("Models.Levels -> placeStructure : Cannot create structure of type " + type);
-				return;
-			}
-
-			Models.Structures structureModel = Models.Structures.placeStructureOnSurface (structurePrototypes [type], surfaceModel);
-
-			//either there are no callbacks or 
-			//structureModel returns null as there is already a structure on the surface
-			if (structurePlacedCallBacks != null && structureModel != null) {
-				Debug.Log ("Models.Levels -> placeStructure : callback for showing on screen");
-				structurePlacedCallBacks (structureModel);
-			}
-		}
+		/// <description>
+		/// This subsection includes all function related to surfaces listed as follows
+		/// GetSurfaceAt(int, int): get surface model at coordinate x, y
+		/// SurfaceChanged(Models.Surfaces): callback triggering for surfaces that have changed
+		/// 
+		/// </description>
 
 		public Models.Surfaces GetSurfaceAt(int x, int y) {
 			if (x < width && x > -1 && y < height && y > -1) {
@@ -147,6 +118,41 @@ namespace Models {
 			}
 			return null;
 		}
+
+		public void SurfaceChanged(Models.Surfaces surfaceModel) {
+			Debug.Log ("Models.Levels --> structure changed : something related to the surface changed updating surface");
+			//Check if surface existis ?
+
+			if (SurfaceChangedCallBacks != null && surfaceModel != null) {
+				SurfaceChangedCallBacks (surfaceModel);
+			}
+		}
+
+
+		/// <description>
+		/// This subsection includes all functions related to surfaces listed as follows
+		/// PlaceStructure(Models.Structure.StructureType, Models.Surfaces): 
+		/// 		creates and places a structure of type structuretype on surface.
+		/// CheckForStructureConnections(int, int, Models.Structure.StructureType):
+		/// 		chedk if the given structure type has connectable neighbors
+		/// </description>
+		public void PlaceStructure(Models.Structures.StructureType type, Models.Surfaces surfaceModel) {
+			Debug.Log ("Models.Levels -> placeStructure : trying to place structure of type : " + type);
+			if (structurePrototypes.ContainsKey (type) == false) {
+				Debug.Log ("Models.Levels -> placeStructure : Cannot create structure of type " + type);
+				return;
+			}
+
+			Models.Structures structureModel = Models.Structures.PlaceStructureOnSurface (structurePrototypes [type], surfaceModel);
+
+			//either there are no callbacks or 
+			//structureModel returns null as there is already a structure on the surface
+			if (StructurePlacedCallBacks != null && structureModel != null) {
+				Debug.Log ("Models.Levels -> placeStructure : callback for showing on screen");
+				StructurePlacedCallBacks (structureModel);
+			}
+		}
+
 
 
 		/* FIXME: currently cardinal directions are assumed as follows
@@ -158,7 +164,8 @@ namespace Models {
 		 * handling edge cases x = 0, x = level.width - 1, y = 0, and y = level.height - 1?
 		 * sends an int where a 1 in the following positions indicates a neightbor of the same type
 		 */
-		public string CheckForNeighbors(int x, int y, Models.Structures.StructureType type) {
+
+		public string CheckForStructureConnections(int x, int y, Models.Structures.StructureType type) {
 
 
 			//Return this when done
@@ -190,30 +197,28 @@ namespace Models {
 			return direction;
 		}
 
-		//TODO: temporary for now might be removed later
-		public Models.Surfaces.TerrainType randomizeTerrain() {
-			return (Models.Surfaces.TerrainType)UnityEngine.Random.Range (0, Enum.GetNames (typeof(Models.Surfaces.TerrainType)).Length);
-		}
+		/// <description>
+		/// Callbacks for associated classes are registered and unregistered here
+		/// 1. Surface Changed
+		/// 2. Structure Placed
+		/// </description>
 
 		//Surface Models Callback Registers
 		public void RegisterSurfaceChangedCallBack(Action<Models.Surfaces> callback) {
-			surfaceChangedCallBacks += callback;
+			SurfaceChangedCallBacks += callback;
 		}
 
 		public void UnregisterSurfaceChangedCallBack(Action<Models.Surfaces> callback) {
-			surfaceChangedCallBacks -= callback;
+			SurfaceChangedCallBacks -= callback;
 		}
 
 		//Structure Models Callback Registers
 		public void RegisterStructurePlacedCallBack(Action<Models.Structures> callback) {
-			structurePlacedCallBacks += callback;
+			StructurePlacedCallBacks += callback;
 		}
 
 		public void UnregisterStructurePlacedCallBack(Action<Models.Structures> callback) {
-			structurePlacedCallBacks -= callback;
+			StructurePlacedCallBacks -= callback;
 		}
-
-
-
 	}
 }

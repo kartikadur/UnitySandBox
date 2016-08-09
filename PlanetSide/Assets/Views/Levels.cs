@@ -30,7 +30,7 @@ namespace Views {
 
 		Dictionary<Models.Surfaces, Views.Surfaces> surfaceModelViewMap;
 		Dictionary<Models.Structures, Views.Structures> structureModelViewMap;
-		Dictionary<string, Sprite> structureNameSpriteMap;
+		Dictionary<string, Sprite> SpriteNameMap;
 
 		//offset holds half the width and height of tiles used in 2d space
 		Vector3 offset = new Vector3(0.5f, 0.25f, 0f);
@@ -43,7 +43,7 @@ namespace Views {
 		void OnEnable() {
 
 			// Temporary measure to ensure I can use named sprites instead of sprite arrays
-			structureNameSpriteMap = new Dictionary<string, Sprite> ();
+			SpriteNameMap = new Dictionary<string, Sprite> ();
 
 			//Debug.Log ("Runs First");
 			sprites = Resources.LoadAll<Sprite>("Sprites");
@@ -51,7 +51,7 @@ namespace Views {
 
 			foreach (var s in sprites) {
 				//Debug.Log ("Views.Levels --> Start : loaded sprite for - " + r);
-				structureNameSpriteMap [s.name] = s;
+				SpriteNameMap [s.name] = s;
 			}
 
 			if (viewLevelInstance != null) {
@@ -69,7 +69,7 @@ namespace Views {
 			int height = 20;
 			level.RegisterStructurePlacedCallBack (OnStructurePlacedOnSurface);
 //			level.RegisterSurfaceChangedCallBack (OnSurfaceTerrainCreated);
-			level.createLevel(width, height);
+			level.CreateEmptyLevel(width, height);
 			//surfaceViews = new Views.Surfaces[width * height];
 
 			//Create Dictionary Maps
@@ -97,6 +97,11 @@ namespace Views {
 
 
 		}
+
+
+		/// <description>
+		/// Surface Methods for all surface models in level view
+		/// </description>
 
 		public void OnSurfaceTerrainCreated(Models.Surfaces surfaceModel) {
 			
@@ -150,6 +155,12 @@ namespace Views {
 			}
 
 		}
+
+
+		/// <description>
+		/// Methods for all structures on surfaces in the level view
+		/// </description>
+
 
 		//TODO: once a new structure is created, check its drawing order compared to all other structures allready placed.
 		// then rearrange all the structures and place at correct position.
@@ -205,7 +216,7 @@ namespace Views {
 			if (structureModel.LinksToNeighbor == false) {
 				//Since the object does not bother with connectivity to its neighbors it is assumed to have only one sprite
 				//later iterations can randomize this to some extent
-				return structureNameSpriteMap [spriteName];
+				return SpriteNameMap [spriteName];
 			}
 
 
@@ -215,35 +226,17 @@ namespace Views {
 
 			//Get spritename based on links to neighbors
 			spriteName += "_";
-			spriteName += level.CheckForNeighbors (x, y, structureModel.Type);
+			spriteName += level.CheckForStructureConnections (x, y, structureModel.Type);
 
 
-			if (structureNameSpriteMap.ContainsKey (spriteName) == false) {
+			if (SpriteNameMap.ContainsKey (spriteName) == false) {
 				Debug.Log ("Views.Levels --> SpriteForStructure : Cannot find sprite with name " + spriteName);
 				//FIXME: Should return a placeholder of somekind or a null value?
 				return null;
 			} else {
-				return structureNameSpriteMap [spriteName];
+				return SpriteNameMap [spriteName];
 			}
 		}
-
-
-
-		/* Utility functions 
-		//FIXME: create body for these functions
-		protected Vector3 ConvertIsometrictToCartesian(Vector3 point, float xOffset, float yOffset){
-			//TODO: find conversion metrics
-
-			return new Vector3 (point.x, point.y, point.z);
-		}
-
-		//Test function : Not needed anymore
-		public void ChangeRandomSurfaceTerrain() {
-			int randomX = UnityEngine.Random.Range (0, level.Width - 1);
-			int randomY = UnityEngine.Random.Range (0, level.Height - 1);
-			Models.Surfaces surface = level.GetSurfaceAt (randomX, randomY);
-			surface.Terrain = level.randomizeTerrain ();
-		}*/
 
 	}//End class
 }//End namespace
