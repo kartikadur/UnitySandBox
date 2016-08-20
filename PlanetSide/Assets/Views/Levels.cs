@@ -216,7 +216,7 @@ namespace Views {
 			if (structureModel.LinksToNeighbor == false) {
 				//Since the object does not bother with connectivity to its neighbors it is assumed to have only one sprite
 				//later iterations can randomize this to some extent
-				return SpriteNameMap [spriteName];
+				return SpriteNameMap [spriteName + "_1"];
 			}
 
 

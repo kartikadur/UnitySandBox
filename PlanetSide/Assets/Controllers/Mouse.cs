@@ -14,9 +14,12 @@ namespace Controllers {
 		Vector3 startPoint;
 		Vector3 endPoint;
 
-		bool isBuildModeActive = false;
-		Models.Structures.StructureType structureToBuild;
-		Models.Surfaces.TerrainType terrainToApply;
+		[HideInInspector]
+		public bool isBuildModeActive = false;
+		[HideInInspector]
+		public Models.Structures.StructureType structureToBuild;
+		[HideInInspector]
+		public Models.Surfaces.TerrainType terrainToApply;
 
 		// Use this for initialization
 		void Start () {
@@ -95,6 +98,8 @@ namespace Controllers {
 					Utility.Swap (ref startPoint.y, ref endPoint.y);
 				}
 
+				//FIXME: the logic for this will need to be changed based on what is being built and where
+				// or what is changing and where
 				for (int x = (int)startPoint.x; x <= (int)endPoint.x; x++) {
 					for (int y = (int)startPoint.y; y <= (int)endPoint.y; y++) {
 						Models.Surfaces surfaceModel = Models.Levels.Instance.GetSurfaceAt (x, y);
@@ -121,53 +126,25 @@ namespace Controllers {
 
 		}
 
-		/// <description>
-		/// Build calls for establishing terrain on surface
-		/// Set[TerrainType] will allow the user change the surface from any terrain to TerrainType
-		/// </description>
-		public void SetPlain() {
-			isBuildModeActive = false;
-			terrainToApply = Models.Surfaces.TerrainType.Plain;
-		}
-
-		public void SetMountain() {
-			isBuildModeActive = false;
-			terrainToApply = Models.Surfaces.TerrainType.Mountain;
-		}
-
-		public void SetLake() {
-			isBuildModeActive = false;
-			terrainToApply = Models.Surfaces.TerrainType.Lake;
-		}
-
-		public void SetTerrainType(Models.Surfaces.TerrainType terrain, Models.Surfaces surfaceModel) {
+		/// <summary>
+		/// Sets the type of the terrain.
+		/// </summary>
+		/// <param name="terrain">Terrain.</param>
+		/// <param name="surfaceModel">Surface model.</param>
+		protected void SetTerrainType(Models.Surfaces.TerrainType terrain, Models.Surfaces surfaceModel) {
 			Debug.Log ("Controllers.Mouse --> SetTerrainType : terrain " + terrain);
 			surfaceModel.Terrain = terrain;
 		}
 
-		/// <description>
-		/// Build calls for establishing structures on surface
-		/// Build[StructureType] will allow the user to create a structure of BuildingType on the surface
-		/// </description>
-		public void BuildWall() {
-			isBuildModeActive = true;
-			structureToBuild = Models.Structures.StructureType.Wall;
-		}
-
-		//Function call to set road building mode
-		public void BuildRoad() {
-			isBuildModeActive = true;
-			structureToBuild = Models.Structures.StructureType.Road;
-		}
-
-		//Function call to set house building mode
-		public void BuildHouse() {
-			isBuildModeActive = true;
-			structureToBuild = Models.Structures.StructureType.House;
-		}
-
+		/// <summary>
+		/// Builds the structure.
+		/// </summary>
+		/// <param name="type">Type.</param>
+		/// <param name="surfaceModel">Surface model.</param>
 		protected void BuildStructure(Models.Structures.StructureType type, Models.Surfaces surfaceModel) {
 			Debug.Log ("Controllers.Mouse -> BuildStructure : building " + type);
+			//TODO: currently it only checks if there is a structure,
+			// in the future it should check for null values? or create a different system to remove structures
 			levelModel.PlaceStructure (type, surfaceModel);
 		}
 
