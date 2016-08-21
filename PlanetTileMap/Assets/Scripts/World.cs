@@ -6,16 +6,29 @@ public class World : MonoBehaviour {
 
 	public GameObject[] sprites;
 
+	public static World instance = null;
+
 	int _level;		// indicates what level the user is playing
 
 	int _length;		// x - direction
 	int _breadth;	// y - direction
 
-	Dictionary<string, Surface> surfacePrototypesMap;
+	Dictionary<string, GameObject> _prototypeGameObjectMap;
 
 	Tile[] tiles;
 
+	void Awake() {
+		if (instance == null) {
+			instance = this;
+		} else if (instance != this) {
+			Destroy (gameObject);
+		}
+		DontDestroyOnLoad (gameObject);
+	}
+
 	void Start() {
+
+		//FIXME: temporary way to start game
 		CreateWorld (1, 250, 250);
 	}
 
@@ -36,7 +49,7 @@ public class World : MonoBehaviour {
 
 	private void CreateSurfacePrototypes() {
 		//create dictionary
-		surfacePrototypesMap = new Dictionary<string, Surface> ();
+		_prototypeGameObjectMap = new Dictionary<string, GameObject>();
 
 		foreach (GameObject sprite in sprites) {
 			bool isWater = false;
@@ -48,23 +61,33 @@ public class World : MonoBehaviour {
 				movementCost = 0;
 			}
 			Debug.Log ("Create Surface Prototypes : " + sprite.name);
-			Surface surface = new Surface (sprite.name, movementCost, isWater, sprite);
-			surfacePrototypesMap.Add (sprite.name, surface);
+			_prototypeGameObjectMap.Add(sprite.name, sprite);
 		}
 	}
 
 	private void CreateTiles() {
 		for (int x = 0; x < _length; x++) {
 			for (int y = 0; y < _breadth; y++) {
-				
-				Tile tile = new Tile (this, surfacePrototypesMap ["Grass_0"], x, y);
+				GameObject toInstantiate = _prototypeGameObjectMap ["Grass_0"]; 
+				GameObject gameObject = (GameObject)Instantiate (toInstantiate,
+					                        new Vector3 ((x - y) * 1f, (x + y) * 0.5f, 0f),
+					                        Quaternion.identity
+				                        );
 
+				gameObject.name = "Tile_" + x + "_" + y;
+				gameObject.transform.SetParent (instance.transform, true);
+				gameObject.GetComponent<SpriteRenderer> ().sortingOrder = x * _length + y;
+
+				Tile tile = new Tile (this, gameObject , x, y);
 				tiles [x * _length + y] = tile;
-				Instantiate (tile.getSurface ().getSprite (), 
-					new Vector3 ((x - y) * 1f, (x + y) * 0.5f, 0f), 
-					Quaternion.identity);
+//				break;
 			}
+//			break;
 		}
+	}
+
+	private void CreateStructures() {
+
 	}
 
 }

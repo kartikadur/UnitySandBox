@@ -5,26 +5,32 @@ public class Tile {
 
 	World _world;
 
-	Surface _surface;
+	GameObject _surface;
+
+	bool _canBuildHere = false;
+	Structure _structure;
+
 
 	int _x;
 	int _y;
-	int _z;
 
-	public Tile(World world, Surface surface, int x, int y, int z =0) {
+	public Tile(World world, GameObject surface, int x, int y) {
 		_world = world;
 		_surface = surface;
+		//based on surface assign isBuildable as true or false
+		if (_surface.name.Contains ("Grass") == true) {
+			_canBuildHere = true;
+		}
 
 		_x = x;
 		_y = y;
-		_z = z;
 	}
 
 	public World getWorld() {
 		return _world;
 	}
 
-	public Surface getSurface() {
+	public GameObject getSurface() {
 		return _surface;
 	}
 
@@ -36,7 +42,39 @@ public class Tile {
 		return _y;
 	}
 
-	public int getZ() {
-		return _z;
+	/// <summary>
+	/// Determines whether this instance can build here.
+	/// </summary>
+	/// <returns><c>true</c> if this instance can build here; otherwise, <c>false</c>.</returns>
+	public bool CanBuildHere() {
+		return (_canBuildHere == true && _structure == null);
 	}
+
+
+	/// <summary>
+	/// Builds the structure.
+	/// </summary>
+	/// <returns><c>true</c>, if structure was built, <c>false</c> otherwise.</returns>
+	/// <param name="structure">Structure.</param>
+	public bool BuildStructure(Structure structure) {
+		if (CanBuildHere () == true) {
+			_structure = structure;
+			return true;
+		}
+		return false;
+	}
+
+	/// <summary>
+	/// Destroies the structure.
+	/// </summary>
+	/// <returns><c>true</c>, if structure was destroyed, <c>false</c> otherwise.</returns>
+	/// <param name="structure">Structure.</param>
+	public bool DestroyStructure(Structure structure) {
+		if (_structure == structure) {
+			_structure = null;
+			return true;
+		}
+		return false;
+	}
+
 }
