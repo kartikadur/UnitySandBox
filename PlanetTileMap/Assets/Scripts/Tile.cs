@@ -43,6 +43,14 @@ public class Tile {
 	}
 
 	/// <summary>
+	/// Gets the structure.
+	/// </summary>
+	/// <returns>The structure.</returns>
+	public Structure GetStructure() {
+		return _structure;
+	}
+
+	/// <summary>
 	/// Determines whether this instance can build here.
 	/// </summary>
 	/// <returns><c>true</c> if this instance can build here; otherwise, <c>false</c>.</returns>
