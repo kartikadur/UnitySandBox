@@ -20,6 +20,7 @@ public class Build : MonoBehaviour {
 
 	Dictionary<string, Structure> _structurePrototypesMap;
 	Dictionary<string, GameObject> _structureGameObjectMap;
+	Dictionary<string, Structure> _structuresPlacedMap;
 
 	// Use this for initialization
 	void Start () {
@@ -28,6 +29,7 @@ public class Build : MonoBehaviour {
 		mouse = GameObject.FindObjectOfType<Mouse> ();
 		_showPlacement = new GameObject ();
 		_showPlacement.AddComponent<SpriteRenderer> ();
+		_showPlacement.SetActive (false);
 
 		_cannotPlaceHere =  new Color(1.0f,0.25f,0.25f,0.8f);
 		_canPlaceHere = new Color(0.25f,1.0f,0.25f,0.8f);
@@ -39,6 +41,7 @@ public class Build : MonoBehaviour {
 	void Update () {
 
 		ShowIfStructureIsPlaceableOnTile ();
+
 	
 	}
 
@@ -64,6 +67,7 @@ public class Build : MonoBehaviour {
 	public void ResetBuildMode() {
 		_isStructureModeActive = false;
 		_structureToBuild = "";
+		_showPlacement.SetActive (false);
 	}
 
 	public bool GetBuildMode() {
@@ -89,11 +93,10 @@ public class Build : MonoBehaviour {
 			// Adjust sprite, sorting order, and position of the game object to show whether
 			// user can build structure in current position
 			_showPlacement.GetComponent<SpriteRenderer> ().sprite = _structureGameObjectMap [_structureToBuild].GetComponent<SpriteRenderer> ().sprite;
-			_showPlacement.GetComponent<SpriteRenderer> ().sortingOrder = world._sortingOrderMax - Mathf.CeilToInt (Mathf.Sqrt (xPos * xPos + yPos * yPos));
+			_showPlacement.GetComponent<SpriteRenderer> ().sortingOrder = world._sortingOrderMax + 1;
 			_showPlacement.transform.position = convert.fromCartesianToIsometricCoordinates (new Vector3 (xPos, yPos, 0.0f));
 			//show the user whether they can place their selected structure
-			if (world.CanPlaceOnTileAt (new Vector3 (xPos, yPos, 0.0f), 
-				    new Vector3 (_structure.GetLength (), _structure.GetBreadth (), 0.0f)) == false) {
+			if (world.CanPlaceStructureOnTile(_structure,tile) == false) {
 
 				//shows a red ghost of the structure to be placed here
 				_showPlacement.GetComponent<SpriteRenderer> ().color = _cannotPlaceHere;
@@ -102,22 +105,47 @@ public class Build : MonoBehaviour {
 
 				//shows a green ghost of the structure to be placed here
 				_showPlacement.GetComponent<SpriteRenderer> ().color = _canPlaceHere;
+				if (Input.GetMouseButtonUp (0) == true) {
+					BuildStructureOnTile (tile);
+				}
 			}
 
 		}
 	}
 
+	/// <summary>
+	/// Sets the variables that allow for the structure to be built as well as shown on screen
+	/// as buildable ot non-buildable before it is placed on the tile.
+	/// </summary>
 	public void BuildHouse() {
 		SetBuildMode ();
 		_structureToBuild = "House";
 		_structure = _structurePrototypesMap [_structureToBuild];
 		_showPlacement.name = _structureToBuild;
 		_showPlacement.transform.SetParent (this.transform, true);
+		_showPlacement.SetActive (true);
 
 	}
 
-	protected void BuildStructure(Structure structure, Tile tile) {
+	/// <summary>
+	/// Builds the structure on tile. Or basically shows the gameobject at the correct position
+	/// </summary>
+	/// <param name="tile">Tile.</param>
+	protected void BuildStructureOnTile(Tile tile) {
+	
+		int xPos = tile.getX ();
+		int yPos = tile.getY ();
 
+
+		Structure builtStructure = world.PlaceStructureOnTile (_structure, tile);
+		GameObject gameObject = new GameObject ();
+		gameObject.name = "Structure_" + _structureToBuild + "_" + xPos + "_" + yPos;
+		gameObject.transform.SetParent (this.transform, true);
+		SpriteRenderer sr = gameObject.AddComponent<SpriteRenderer> ();
+		sr.sprite = _structureGameObjectMap [_structureToBuild].GetComponent<SpriteRenderer> ().sprite;
+		sr.sortingOrder = world._sortingOrderMax - Mathf.CeilToInt (Mathf.Sqrt (xPos * xPos + yPos * yPos));
+		sr.transform.position = convert.fromCartesianToIsometricCoordinates (new Vector3 (xPos, yPos, 0.0f));
+		builtStructure.SetGameObject (gameObject);
 	}
 
 	/* --- Destroy Structures? --- */

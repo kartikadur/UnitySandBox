@@ -62,6 +62,7 @@ public class Tile {
 	/// <returns><c>true</c>, if structure was built, <c>false</c> otherwise.</returns>
 	/// <param name="structure">Structure.</param>
 	public bool BuildStructure(Structure structure) {
+		Debug.Log ("Tile --> Build Structure : Tile at (" + _x + ", " + _y + ")");
 		if (CanBuildHere () == true) {
 			_structure = structure;
 			return true;

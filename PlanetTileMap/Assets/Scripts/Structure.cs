@@ -11,7 +11,7 @@ public class Structure {
 	Tile _tile;
 	Resource _resource;
 
-	GameObject building;
+	GameObject _gameObject;
 
 	protected Structure() {
 	}
@@ -38,19 +38,23 @@ public class Structure {
 	}
 
 	public static Structure PlaceStructureOnTile(Structure prototype, Tile tile) {
-		Structure building = new Structure ();
+		Structure structure = new Structure ();
 
-		building._name = prototype._name;
-		building._length = prototype._length;
-		building._breadth = prototype._breadth;
+		structure._name = prototype._name;
+		structure._length = prototype._length;
+		structure._breadth = prototype._breadth;
 
 		if (tile.CanBuildHere () == false) {
 			return null;
 		} else {
-			tile.BuildStructure (building);
+			tile.BuildStructure (structure);
 		}
 
-		return building;
+		return structure;
+	}
+
+	public void SetGameObject(GameObject gameObject) {
+		_gameObject = gameObject;
 	}
 
 	public void AddSurface(Tile tile) {

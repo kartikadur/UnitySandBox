@@ -122,34 +122,61 @@ public class World : MonoBehaviour {
 	}
 
 	/// <summary>
-	/// Determines whether this instance can place on tile at the specified coordinate.
+	/// Determines whether this instance can place structure on tile the specified structure tile.
 	/// </summary>
-	/// <returns><c>true</c> if this instance can place on tile at the specified coordinate; otherwise, <c>false</c>.</returns>
-	/// <param name="coordinate">Coordinate.</param>
-	public bool CanPlaceOnTileAt(Vector3 coordinate, Vector3 dimesion) {
-		int xPos = (int)coordinate.x;
-		int yPos = (int)coordinate.y;
-		int xLen = (int)dimesion.x;
-		int yLen = (int)dimesion.y;
+	/// <returns><c>true</c> if this instance can place structure on tile the specified structure tile; otherwise, <c>false</c>.</returns>
+	/// <param name="structure">Structure.</param>
+	/// <param name="tile">Tile.</param>
+	public bool CanPlaceStructureOnTile(Structure structure, Tile tile) {
+		int xPos = tile.getX ();
+		int yPos = tile.getY ();
+		int xLim = structure.GetLength ();
+		int yLim = structure.GetBreadth ();
 
-		//TODO: there is a problem if the user hovers over last tile row or column
-		// To account for that the mouse positions will have to change somehow.
-		if (xPos > _length - xLen || yPos > _breadth - yLen) {
+		if (xPos > _length - xLim || yPos > _breadth - yLim) {
+			//the length and breadth of the structure goes outside the map
 			return false;
 		}
 
-		//TODO: fix for edge cases where coodinate is one less than boundary - structure dimension
-
-		for (int x = xPos; x < xPos + xLen; x++) {
-			for (int y = yPos; y < yPos + yLen; y++) {
-				Tile tile = GetTileAt (new Vector3 (x, y, 0f));
-				if (tile.CanBuildHere () == false) {
+		for (int x = xPos; x < xPos + xLim; x++) {
+			for (int y = yPos; y < yPos + yLim; y++) {
+				Tile _tile = GetTileAt (new Vector3 (x, y, 0f));
+				if (_tile.CanBuildHere () == false) {
 					return false;
 				}
 			}
 		}
 
 		return true;
+	}
+
+	public Structure PlaceStructureOnTile(Structure structure, Tile tile) {
+
+		if (CanPlaceStructureOnTile (structure, tile) == true) {
+			int xPos = tile.getX ();
+			int yPos = tile.getY ();
+			int xLim = structure.GetLength ();
+			int yLim = structure.GetBreadth ();
+
+			if (xPos > _length - xLim || yPos > _breadth - yLim) {
+				//the length and breadth of the structure goes outside the map
+				return null;
+			}
+
+			Structure _structure = Structure.PlaceStructureOnTile (structure, tile);
+
+			for (int x = xPos; x < xPos + xLim; x++) {
+				for (int y = yPos; y < yPos + yLim; y++) {
+					Tile _tile = GetTileAt (new Vector3 (x, y, 0f));
+					_tile.BuildStructure (_structure);
+				}
+			}
+			return _structure;
+		} else {
+			return null;
+		}
+
+
 	}
 
 	private void CreateSurfacePrototypes() {
