@@ -54,30 +54,40 @@ public class Mouse : MonoBehaviour {
 		lastMousePosition = GetMousePositionInWorld ();
 	}
 
-	public void LeftMouseButtonPressed() {
+	protected void LeftMouseButtonPressed() {
 		if (Input.GetMouseButtonDown (0) == true) {
 			startPoint = world.convert.fromIsometricToCartesianCoordinates (currentMousePosition);
 			_isDragMode = true;
+
+//			// Keep track of which tile is currently under the mouse
+//			Tile tile = GetTileUnderMouse ();
+//			if (tile != null) {
+//				Debug.Log ("Mouse --> LeftMouseButtonReleased : tile coordinates (" + tile.getX () + ", " + tile.getY () + ")");
+//			}
 			Debug.Log ("Mouse --> LeftMouseButtonPressed : structure mode" + buildController.GetBuildMode ());
 		}
 	}
 
-	public void LeftMouseButtonReleased() {
+	protected void LeftMouseButtonReleased() {
 		if (Input.GetMouseButtonUp (0) == true) {
 			endPoint = world.convert.fromIsometricToCartesianCoordinates (currentMousePosition);
 			_isDragMode = false;
-			Tile tile = GetTileUnderMouse ();
-			if (tile != null) {
-				Debug.Log ("Mouse --> LeftMouseButtonReleased : tile coordinates (" + tile.getX () + ", " + tile.getY () + ")");
-			}
+
+			// Keep track of which tile is currently under the mouse
+//			Tile tile = GetTileUnderMouse ();
+//			if (tile != null) {
+//				Debug.Log ("Mouse --> LeftMouseButtonReleased : tile coordinates (" + tile.getX () + ", " + tile.getY () + ")");
+//			}
 			Debug.Log ("Mouse --> LeftMouseButtonReleased : structure mode" + buildController.GetBuildMode ());
 		}
 
 
 	}
 
-	public void WhileDragging() {
+	protected void WhileDragging() {
 		if (_isDragMode == true) {
+
+			// Keep track of which tile is currently under the mouse
 			Tile tile = GetTileUnderMouse ();
 			if (tile != null) {
 				Debug.Log ("Mouse --> While Dragging : tile coordinates (" + tile.getX () + ", " + tile.getY () + ")");

@@ -9,8 +9,8 @@ public class World : MonoBehaviour {
 
 		Vector3 _offset;
 
-		public ConvertUnits(Vector3 offset) {
-			_offset = offset;
+		public ConvertUnits() {
+			_offset = new Vector3 (0.5f, 0.25f, 0f);
 		}
 
 		public Vector3 GetOffset() {
@@ -53,7 +53,7 @@ public class World : MonoBehaviour {
 
 	int _length;		// x - direction
 	int _breadth;	// y - direction
-	int _sortingOrderMax;
+	public int _sortingOrderMax;
 
 	Dictionary<string, GameObject> _prototypeGameObjectMap;
 
@@ -67,7 +67,7 @@ public class World : MonoBehaviour {
 		}
 		DontDestroyOnLoad (gameObject);
 
-		convert = new ConvertUnits (new Vector3 (0.5f, 0.25f, 0f));
+		convert = new ConvertUnits ();
 	}
 
 	void Start() {
@@ -75,6 +75,21 @@ public class World : MonoBehaviour {
 		//FIXME: temporary way to start game
 		CreateWorld (1, 10, 10);
 		Camera.main.transform.position = new Vector3 (0f, _breadth * convert.GetOffset().y, -10f);
+	}
+
+	/// <summary>
+	/// Gets the length.
+	/// </summary>
+	/// <returns>The length.</returns>
+	public int GetLength() {
+		return _length;
+	}
+	/// <summary>
+	/// Gets the breadth.
+	/// </summary>
+	/// <returns>The breadth.</returns>
+	public int GetBreadth() {
+		return _breadth;
 	}
 
 	public void CreateWorld(int level, int length, int breadth) {
@@ -106,6 +121,37 @@ public class World : MonoBehaviour {
 		}
 	}
 
+	/// <summary>
+	/// Determines whether this instance can place on tile at the specified coordinate.
+	/// </summary>
+	/// <returns><c>true</c> if this instance can place on tile at the specified coordinate; otherwise, <c>false</c>.</returns>
+	/// <param name="coordinate">Coordinate.</param>
+	public bool CanPlaceOnTileAt(Vector3 coordinate, Vector3 dimesion) {
+		int xPos = (int)coordinate.x;
+		int yPos = (int)coordinate.y;
+		int xLen = (int)dimesion.x;
+		int yLen = (int)dimesion.y;
+
+		//TODO: there is a problem if the user hovers over last tile row or column
+		// To account for that the mouse positions will have to change somehow.
+		if (xPos > _length - xLen || yPos > _breadth - yLen) {
+			return false;
+		}
+
+		//TODO: fix for edge cases where coodinate is one less than boundary - structure dimension
+
+		for (int x = xPos; x < xPos + xLen; x++) {
+			for (int y = yPos; y < yPos + yLen; y++) {
+				Tile tile = GetTileAt (new Vector3 (x, y, 0f));
+				if (tile.CanBuildHere () == false) {
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
 	private void CreateSurfacePrototypes() {
 		//create dictionary
 		_prototypeGameObjectMap = new Dictionary<string, GameObject>();
@@ -129,16 +175,12 @@ public class World : MonoBehaviour {
 				gameObject.transform.SetParent (instance.transform, true);
 				gameObject.GetComponent<SpriteRenderer> ().sortingOrder = _sortingOrderMax - Mathf.CeilToInt (Mathf.Sqrt (x * x + y * y));
 
-				Tile tile = new Tile (this, gameObject , x, y);
+				Tile tile = new Tile (this, gameObject, true, x, y);
 				tiles [x * _length + y] = tile;
 //				break;
 			}
 //			break;
 		}
-	}
-
-	private void CreateStructures() {
-
 	}
 
 }

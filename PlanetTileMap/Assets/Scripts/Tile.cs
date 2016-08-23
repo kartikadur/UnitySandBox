@@ -14,13 +14,10 @@ public class Tile {
 	int _x;
 	int _y;
 
-	public Tile(World world, GameObject surface, int x, int y) {
+	public Tile(World world, GameObject surface, bool canBuildHere, int x, int y) {
 		_world = world;
 		_surface = surface;
-		//based on surface assign isBuildable as true or false
-		if (_surface.name.Contains ("Grass") == true) {
-			_canBuildHere = true;
-		}
+		_canBuildHere = canBuildHere;
 
 		_x = x;
 		_y = y;
