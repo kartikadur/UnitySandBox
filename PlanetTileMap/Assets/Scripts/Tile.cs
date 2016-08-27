@@ -48,6 +48,14 @@ public class Tile {
 	}
 
 	/// <summary>
+	/// Determines whether this instance has structure.
+	/// </summary>
+	/// <returns><c>true</c> if this instance has structure; otherwise, <c>false</c>.</returns>
+	public bool HasStructure() {
+		return _structure != null;
+	}
+
+	/// <summary>
 	/// Determines whether this instance can build here.
 	/// </summary>
 	/// <returns><c>true</c> if this instance can build here; otherwise, <c>false</c>.</returns>

@@ -122,6 +122,42 @@ public class World : MonoBehaviour {
 	}
 
 	/// <summary>
+	/// Gets the tile at north.
+	/// </summary>
+	/// <returns>The tile at north.</returns>
+	/// <param name="coordinate">Coordinate.</param>
+	public Tile GetTileAtNorth(Vector3 coordinate) {
+		return GetTileAt (new Vector3 (coordinate.x + 1, coordinate.y, 0));
+	}
+
+	/// <summary>
+	/// Gets the tile at south.
+	/// </summary>
+	/// <returns>The tile at south.</returns>
+	/// <param name="coordinate">Coordinate.</param>
+	public Tile GetTileAtSouth(Vector3 coordinate) {
+		return GetTileAt (new Vector3 (coordinate.x - 1, coordinate.y, 0));
+	}
+
+	/// <summary>
+	/// Gets the tile at east.
+	/// </summary>
+	/// <returns>The tile at east.</returns>
+	/// <param name="coordinate">Coordinate.</param>
+	public Tile GetTileAtEast(Vector3 coordinate) {
+		return GetTileAt (new Vector3 (coordinate.x, coordinate.y - 1, 0));
+	}
+
+	/// <summary>
+	/// Gets the tile at west.
+	/// </summary>
+	/// <returns>The tile at west.</returns>
+	/// <param name="coordinate">Coordinate.</param>
+	public Tile GetTileAtWest(Vector3 coordinate) {
+		return GetTileAt (new Vector3 (coordinate.x, coordinate.y + 1, 0));
+	}
+
+	/// <summary>
 	/// Determines whether this instance can place structure on tile the specified structure tile.
 	/// </summary>
 	/// <returns><c>true</c> if this instance can place structure on tile the specified structure tile; otherwise, <c>false</c>.</returns>
@@ -175,8 +211,43 @@ public class World : MonoBehaviour {
 		} else {
 			return null;
 		}
+	}
 
+	public string GetStructureNeighbors(Structure structure) {
+		string links = "";
 
+		//get 
+		int xPos = structure.GetTile().getX(); // indicated north (+ve) south (-ve) tiles
+		int yPos = structure.GetTile().getY (); // indicates east (-ve) west (+ve) tiles
+
+		Debug.Log ("World --> GetStructureNeighbors : structure name : " + structure.GetName ());
+
+		//North
+		Tile northTile = GetTileAtNorth(new Vector3(xPos,yPos,0));
+		if (northTile != null && northTile.HasStructure() == true && northTile.GetStructure().GetName() == structure.GetName()) {
+//			Debug.Log ("World --> GetStructureNeighbors : North neighbor");
+			links += "N";
+		}
+		//East
+		Tile eastTile = GetTileAtEast(new Vector3(xPos,yPos,0));
+		if (eastTile != null && eastTile.HasStructure() == true && eastTile.GetStructure().GetName() == structure.GetName()) {
+//			Debug.Log ("WOrld --> GetStructureNeighbors : East neighbor");
+			links += "E";
+		}
+		//South
+		Tile southTile = GetTileAtSouth(new Vector3(xPos,yPos,0));
+		if (southTile != null && southTile.HasStructure() == true && southTile.GetStructure().GetName() == structure.GetName()) {
+//			Debug.Log ("WOrld --> GetStructureNeighbors : South neighbor");
+			links += "S";
+		}
+		//West
+		Tile westTile = GetTileAtWest(new Vector3(xPos,yPos,0));
+		if (westTile != null && westTile.HasStructure() == true && westTile.GetStructure().GetName() == structure.GetName()) {
+//			Debug.Log ("WOrld --> GetStructureNeighbors : WEST neighbor");
+			links += "W";
+		}
+
+		return links;
 	}
 
 	private void CreateSurfacePrototypes() {
@@ -202,7 +273,7 @@ public class World : MonoBehaviour {
 				gameObject.transform.SetParent (instance.transform, true);
 				gameObject.GetComponent<SpriteRenderer> ().sortingOrder = _sortingOrderMax - Mathf.CeilToInt (Mathf.Sqrt (x * x + y * y));
 
-				Tile tile = new Tile (this, gameObject, true, x, y);
+				Tile tile = new Tile (World.instance, gameObject, true, x, y);
 				tiles [x * _length + y] = tile;
 //				break;
 			}
