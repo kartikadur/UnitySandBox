@@ -1,0 +1,7 @@
+- This is an online repo of my Unity learning environment, where I putter and tinker
+- Most of the code here should be available out there already, but without a few of the changes I may have made.
+  - Most of these changes are me trying to learn something
+  - Not sure what changes were made, since I failed to keep track of them
+- I update this very infrequently since this more of a hobby
+  - Not sure when I will get back to this (there are definite plans in the future to get back on track)
+- Got any suggestions or something to say? Let me know. No promises on replies
